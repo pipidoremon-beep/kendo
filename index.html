@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Khóa Xe Beacon</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;800&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Bố cục: một cột kiểu "remote" trên điện thoại — trạng thái xe ở trên, chỉnh số ở giữa, nhật ký ở dưới */
+:root{
+  --bg:#eef1f4; --panel:#ffffff; --fg:#17202a; --muted:#5d6b78; --line:#d5dbe1;
+  --accent:#0a7cff; --ok:#159a55; --bad:#d23c3c; --warn:#c98a00;
+  --f-body:"Be Vietnam Pro",system-ui,sans-serif; --f-mono:"JetBrains Mono",ui-monospace,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1418; --panel:#182027; --fg:#e8eef3; --muted:#93a1ad; --line:#2a353f;
+  --accent:#4ea1ff; --ok:#34c777; --bad:#ff6b6b; --warn:#f0b429; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1418; --panel:#182027; --fg:#e8eef3; --muted:#93a1ad; --line:#2a353f;
+  --accent:#4ea1ff; --ok:#34c777; --bad:#ff6b6b; --warn:#f0b429; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--f-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:calc(16px + env(safe-area-inset-top,0px)) calc(24px + env(safe-area-inset-bottom,0px))}
+main{max-width:460px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1{font-size:22px;font-weight:800;margin:0;text-wrap:balance}
+h2{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.pill{font-size:13px;padding:4px 10px;border-radius:99px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.pill.on{color:var(--ok);border-color:var(--ok)}
+section{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
+button{font:600 16px var(--f-body);border:0;border-radius:11px;padding:13px;cursor:pointer;width:100%;color:#fff;background:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button:disabled{opacity:.45;cursor:not-allowed}
+.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.state{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.box{border:1px solid var(--line);border-radius:11px;padding:10px}
+.box small{display:block;color:var(--muted);font-size:12px}
+.box b{font-size:20px}
+.ok{color:var(--ok)} .bad{color:var(--bad)} .warn{color:var(--warn)}
+.rssi{margin-top:12px}
+.rssi .num{font:500 34px var(--f-mono);font-variant-numeric:tabular-nums}
+.meter{position:relative;height:14px;border-radius:7px;background:var(--line);margin-top:6px;overflow:hidden}
+.meter .fill{position:absolute;left:0;top:0;bottom:0;background:var(--accent);width:0;transition:width .3s}
+.meter .mk{position:absolute;top:-2px;bottom:-2px;width:3px}
+.mk.mo{background:var(--ok)} .mk.kh{background:var(--bad)}
+.scale{display:flex;justify-content:space-between;font:12px var(--f-mono);color:var(--muted);margin-top:4px}
+.row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}
+.row label{min-width:0}
+.row label small{display:block;color:var(--muted);font-size:12px}
+select{width:auto!important;max-width:200px}
+input[type=number],input[type=text],select{font:500 16px var(--f-mono);width:110px;padding:7px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--fg);text-align:right}
+input[type=text]{width:180px;text-align:left;font-size:14px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.slider{grid-column:1/-1}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn-mo{background:var(--ok)} .btn-kh{background:var(--bad)}
+#msg{min-height:1.5em;font-size:14px;margin-top:8px}
+#log{font:12px/1.5 var(--f-mono);color:var(--muted);max-height:180px;overflow:auto;white-space:pre-wrap;word-break:break-word;margin:0}
+.note{font-size:13px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.meter .fill{transition:none}}
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <h1>Khóa Xe Beacon</h1>
+    <span class="pill" id="pill">Chưa kết nối</span>
+  </div>
+
+  <section id="connectBox">
+    <button id="btnConnect">Kết nối mạch qua Bluetooth</button>
+    <p class="note" id="hint">Trên mạch: giữ BOOT 3 giây (đèn nháy nhanh), rồi bấm nút trên và chọn <b>KhoaXe-xxxx</b> (mỗi mạch một tên).</p>
+  </section>
+
+  <section>
+    <h2>Trạng thái</h2>
+    <div class="state">
+      <div class="box"><small>Xe</small><b id="xe">—</b></div>
+      <div class="box"><small>Beacon</small><b id="bc">—</b></div>
+    </div>
+    <div class="rssi">
+      <small class="note">Sóng trung bình (RSSI)</small>
+      <div class="num" id="rssi">—</div>
+      <div class="meter"><div class="fill" id="fill"></div><div class="mk mo" id="mkMo"></div><div class="mk kh" id="mkKh"></div></div>
+      <div class="scale"><span>-100 xa</span><span><span class="ok">▌mở</span> <span class="bad">▌khóa</span></span><span>-40 sát</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Khoảng cách</h2>
+    <div class="row"><label for="mo">Ngưỡng MỞ <small>Càng âm = mở từ càng xa</small></label><input type="number" id="mo" min="-110" max="-1"></div>
+    <input class="slider" type="range" id="moR" min="-100" max="-40" aria-label="Ngưỡng mở">
+    <div class="row"><label for="khoa">Ngưỡng KHÓA <small>Âm hơn ngưỡng mở ít nhất 5</small></label><input type="number" id="khoa" min="-110" max="-1"></div>
+    <input class="slider" type="range" id="khoaR" min="-110" max="-45" aria-label="Ngưỡng khóa">
+  </section>
+
+  <section>
+    <h2>Cài đặt khác</h2>
+    <div class="row"><label for="cho">Chờ khóa (giây) <small>Đi xa bao lâu thì khóa</small></label><input type="number" id="cho" min="3" max="600"></div>
+    <div class="row"><label for="xn">Số lần xác nhận mở <small>1 = nhanh nhất</small></label><input type="number" id="xn" min="1" max="10"></div>
+    <div class="row"><label for="kich">Relay đóng (ms)</label><input type="number" id="kich" min="100" max="5000" step="100"></div>
+    <div class="row"><label for="den">Đèn xanh</label><select id="den"><option value="1">Theo xe</option><option value="2">Theo beacon</option><option value="0">Tắt</option></select></div>
+    <div class="row"><label for="thap">Kiểu relay</label><select id="thap"><option value="0">C1815 / kích mức cao</option><option value="1">Module kích mức thấp</option></select></div>
+    <div class="row"><label for="ngu">Chống khóa nhầm khi beacon ngủ</label><select id="ngu"><option value="1">Bật</option><option value="0">Tắt</option></select></div>
+    <div class="row"><label for="phut">Beacon ngủ tối đa (phút)</label><input type="number" id="phut" min="1" max="120"></div>
+    <div class="row"><label for="mac">Địa chỉ beacon</label><input type="text" id="mac" maxlength="17" spellcheck="false" autocapitalize="off"></div>
+    <button id="btnSave" disabled>Lưu cài đặt</button>
+    <div id="msg"></div>
+  </section>
+
+  <section>
+    <h2>Thử relay</h2>
+    <div class="two">
+      <button class="btn-mo" id="btnTM" disabled>Thử MỞ</button>
+      <button class="btn-kh" id="btnTK" disabled>Thử KHÓA</button>
+    </div>
+  </section>
+
+  <button class="ghost" id="btnExit" disabled>Thoát cài đặt</button>
+
+  <section>
+    <h2>Nhật ký</h2>
+    <pre id="log"></pre>
+  </section>
+</main>
+
+<script>
+const NUS = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+const RX  = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"; // điện thoại -> mạch
+const TX  = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"; // mạch -> điện thoại
+const $ = id => document.getElementById(id);
+let dev = null, rx = null, buf = "", queue = Promise.resolve();
+const cur = {};            // cài đặt mạch đang có
+const FIELDS = ["mo","khoa","xn","cho","kich","den","thap","ngu","phut","mac"];
+
+function log(s){ const l=$("log"); l.textContent += s + "\n"; l.scrollTop = l.scrollHeight; }
+function msg(s, cls){ const m=$("msg"); m.textContent=s; m.className=cls||""; }
+
+function setConnected(on){
+  $("pill").textContent = on ? "Đã kết nối" : "Chưa kết nối";
+  $("pill").classList.toggle("on", on);
+  ["btnSave","btnTM","btnTK","btnExit"].forEach(id => $(id).disabled = !on);
+  $("btnConnect").textContent = on ? "Ngắt kết nối" : "Kết nối mạch qua Bluetooth";
+}
+
+if (!navigator.bluetooth){
+  $("hint").innerHTML = "Trình duyệt này không hỗ trợ Bluetooth web. Android: mở trang bằng <b>Chrome</b>. iPhone: dùng app <b>Bluefy</b>.";
+  $("btnConnect").disabled = true;
+}
+
+$("btnConnect").onclick = async () => {
+  if (dev && dev.gatt.connected){ dev.gatt.disconnect(); return; }
+  try{
+    dev = await navigator.bluetooth.requestDevice({ acceptAllDevices:true, optionalServices:[NUS] });
+    dev.addEventListener("gattserverdisconnected", () => { setConnected(false); log("— Đã ngắt kết nối"); });
+    log("Đang kết nối " + (dev.name||"thiết bị") + "...");
+    const srv = await dev.gatt.connect();
+    const svc = await srv.getPrimaryService(NUS);
+    rx = await svc.getCharacteristic(RX);
+    const tx = await svc.getCharacteristic(TX);
+    await tx.startNotifications();
+    tx.addEventListener("characteristicvaluechanged", e => {
+      buf += new TextDecoder().decode(e.target.value);
+      let i;
+      while ((i = buf.indexOf("\n")) >= 0){ const line = buf.slice(0,i).trim(); buf = buf.slice(i+1); if (line) onLine(line); }
+    });
+    setConnected(true);
+    log("Đã kết nối");
+    await send("xem");
+    await send("song");
+  }catch(err){
+    log("Lỗi: " + err.message);
+    if (String(err).includes("service")) msg("Thiết bị này không phải mạch khóa xe, hoặc mạch chưa vào chế độ cài đặt.", "bad");
+  }
+};
+
+function send(cmd){
+  queue = queue.then(async () => {
+    if (!rx) return;
+    const data = new TextEncoder().encode(cmd + "\n");
+    for (let i=0;i<data.length;i+=20) await rx.writeValue(data.slice(i,i+20));
+    log("> " + cmd);
+    await new Promise(r => setTimeout(r, 150));
+  }).catch(e => log("Lỗi gửi: " + e.message));
+  return queue;
+}
+
+function onLine(s){
+  let m;
+  if ((m = s.match(/^(mac|mo|khoa|xn|cho|kich|den|thap|ngu|phut)\s*=\s*(\S+)/))){
+    cur[m[1]] = m[2]; fill(m[1], m[2]); markers(); return;
+  }
+  if ((m = s.match(/^Song TB (-?\d+) \((-?\d+)\) (GAN|XA)/))){
+    showRssi(+m[1]); showBeacon(m[3]==="GAN"); return;
+  }
+  if ((m = s.match(/^Song: KHONG nghe beacon \((\d+)s\)/))){
+    $("rssi").textContent = "Mất sóng " + m[1] + "s"; $("fill").style.width = "0"; showBeacon(false); return;
+  }
+  if ((m = s.match(/Xe: (DA MO|DA KHOA)\s*\|\s*Beacon: (O GAN|XA)/))){ showXe(m[1]==="DA MO"); showBeacon(m[2]==="O GAN"); }
+  if (/>>> Xe: MO KHOA/.test(s)) showXe(true);
+  else if (/>>> Xe: KHOA/.test(s)) showXe(false);
+  if (/^Da luu: (\w+) (.+)$/.test(s)){ const [,k,v] = s.match(/^Da luu: (\w+) (.+)$/); cur[k]=v; markers(); }
+  if (/^Loi/.test(s)) msg(s, "bad");
+  log(s);
+}
+
+function fill(k, v){
+  const el = $(k); if (!el) return;
+  el.value = v;
+  if (k==="mo") $("moR").value = v;
+  if (k==="khoa") $("khoaR").value = v;
+}
+function showXe(mo){ const e=$("xe"); e.textContent = mo ? "ĐÃ MỞ" : "ĐÃ KHÓA"; e.className = mo ? "ok" : "bad"; }
+function showBeacon(g){ const e=$("bc"); e.textContent = g ? "Ở gần" : "Xa"; e.className = g ? "ok" : "warn"; }
+const pct = v => Math.max(0, Math.min(100, (v + 100) / 60 * 100));
+function showRssi(v){ $("rssi").textContent = v + " dBm"; $("fill").style.width = pct(v) + "%"; }
+function markers(){
+  const mo = +$("mo").value, kh = +$("khoa").value;
+  if (!isNaN(mo)) $("mkMo").style.left = pct(mo) + "%";
+  if (!isNaN(kh)) $("mkKh").style.left = pct(kh) + "%";
+}
+
+$("moR").oninput = () => { $("mo").value = $("moR").value; markers(); };
+$("khoaR").oninput = () => { $("khoa").value = $("khoaR").value; markers(); };
+$("mo").oninput = () => { $("moR").value = $("mo").value; markers(); };
+$("khoa").oninput = () => { $("khoaR").value = $("khoa").value; markers(); };
+
+$("btnSave").onclick = async () => {
+  const mo = +$("mo").value, kh = +$("khoa").value;
+  if (kh > mo - 5){ msg("Ngưỡng KHÓA phải âm hơn ngưỡng MỞ ít nhất 5 (nên 10).", "bad"); return; }
+  const mac = $("mac").value.trim().toLowerCase();
+  if (!/^([0-9a-f]{2}:){5}[0-9a-f]{2}$/.test(mac)){ msg("Địa chỉ beacon phải có dạng xx:xx:xx:xx:xx:xx", "bad"); return; }
+  msg("Đang lưu...", "");
+  // Thứ tự gửi để mạch không báo lỗi khi đổi cả 2 ngưỡng
+  const order = (mo > +cur.mo) ? ["mo","khoa"] : ["khoa","mo"];
+  const all = [...order, "xn","cho","kich","den","thap","ngu","phut","mac"];
+  let n = 0;
+  for (const k of all){
+    const v = k==="mac" ? mac : String($(k).value).trim();
+    if (v !== "" && v !== String(cur[k])){ await send(k + " " + v); n++; }
+  }
+  msg(n ? "Đã gửi " + n + " thay đổi. Mạch lưu ngay." : "Không có gì thay đổi.", "ok");
+};
+
+$("btnTM").onclick = () => send("thu mo");
+$("btnTK").onclick = () => send("thu khoa");
+$("btnExit").onclick = async () => { await send("thoat"); };
+
+setConnected(false);
+// Số mẫu cho đến khi kết nối
+fill("mo",-70); fill("khoa",-82); markers();
+</script>
+</body>
+</html>
