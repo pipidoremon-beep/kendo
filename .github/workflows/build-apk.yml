@@ -1,0 +1,43 @@
+name: Build APK Kendo
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Build APK
+        run: |
+          DIR=$(dirname "$(find . -name settings.gradle -not -path './.git/*' | head -1)")
+          echo "Thu muc app: $DIR"
+          cd "$DIR"
+          gradle assembleDebug --no-daemon
+          cp "$(find . -name '*-debug.apk' | head -1)" "$GITHUB_WORKSPACE/kendo.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kendo-apk
+          path: kendo.apk
+
+      - name: Dua len trang Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete app --yes --cleanup-tag || true
+          gh release create app kendo.apk --title "Kendo app" --notes "Tai kendo.apk ve dien thoai Android va cai dat."
