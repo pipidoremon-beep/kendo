@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#0A6CDB" android:pathData="M0,0h108v108h-108z"/>
+    <!-- vong tron dau chia khoa -->
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M42,40a14,14 0,1 1,0 28a14,14 0,1 1,0 -28zM42,48a6,6 0,1 0,0 12a6,6 0,1 0,0 -12z"/>
+    <!-- than chia khoa -->
+    <path android:fillColor="#FFFFFF" android:pathData="M54,50h26v8h-26z"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M70,58h6v8h-6z"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M62,58h5v6h-5z"/>
+</vector>

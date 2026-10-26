@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Kendo</title>
+<style>
+/* Mot cot kieu "remote": trang thai o tren, cai dat nhanh 3 buoc, cai dat nang cao gap lai */
+:root{
+  --bg:#eef2f6; --panel:#fff; --fg:#14202b; --muted:#5e6c79; --line:#d6dde4;
+  --brand:#0a6cdb; --ok:#13924f; --bad:#d23c3c; --warn:#b97c00; --soft:#e4effc;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0e1419; --panel:#172029; --fg:#e7edf3; --muted:#92a0ad; --line:#28343f;
+  --brand:#4a9dff; --ok:#33c477; --bad:#ff6b6b; --warn:#f0b429; --soft:#16283c; color-scheme:dark}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:var(--brand);color:#fff;padding:14px 16px 18px}
+header h1{margin:0;font-size:24px;font-weight:800;letter-spacing:.02em}
+header p{margin:2px 0 0;opacity:.9;font-size:14px}
+main{max-width:480px;margin:0 auto;padding:14px 16px 32px;display:flex;flex-direction:column;gap:14px}
+section{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}
+h2{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+button{font:600 16px system-ui,sans-serif;border:0;border-radius:12px;padding:14px;width:100%;color:#fff;background:var(--brand)}
+button:disabled{opacity:.4}
+button.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+button.small{width:auto;padding:9px 14px;font-size:14px}
+.conn{display:flex;align-items:center;gap:12px}
+.dot{width:14px;height:14px;border-radius:50%;background:var(--muted);flex:none}
+.dot.ok{background:var(--ok)} .dot.busy{background:var(--warn);animation:p 1s infinite}
+@keyframes p{50%{opacity:.3}}
+.conn b{display:block;font-size:17px}
+.conn small{color:var(--muted);font-size:14px}
+.state{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.box{border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.box small{display:block;color:var(--muted);font-size:12px}
+.box b{font-size:20px}
+.ok{color:var(--ok)} .bad{color:var(--bad)} .warn{color:var(--warn)}
+.num{font:600 32px ui-monospace,"Roboto Mono",monospace;font-variant-numeric:tabular-nums;margin-top:10px}
+.meter{position:relative;height:14px;border-radius:7px;background:var(--line);margin-top:6px;overflow:hidden}
+.meter .fill{position:absolute;left:0;top:0;bottom:0;background:var(--brand);width:0;transition:width .3s}
+.meter .mk{position:absolute;top:-2px;bottom:-2px;width:3px}
+.mk.mo{background:var(--ok)} .mk.kh{background:var(--bad)}
+.scale{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:4px}
+.step{display:grid;grid-template-columns:32px 1fr;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+.step:first-of-type{border-top:0;padding-top:0}
+.step .n{width:32px;height:32px;border-radius:50%;background:var(--soft);color:var(--brand);display:grid;place-items:center;font-weight:800}
+.step.done .n{background:var(--ok);color:#fff}
+.step p{margin:0 0 8px;font-size:15px}
+.step .res{font-size:14px;color:var(--muted);margin-top:6px}
+.list{display:flex;flex-direction:column;gap:6px;margin:8px 0;max-height:260px;overflow:auto}
+.item{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:var(--bg)}
+.item.sel{border-color:var(--brand);background:var(--soft)}
+.item .t{min-width:0}
+.item .t b{display:block;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .t small{font:12px ui-monospace,monospace;color:var(--muted)}
+.item .r{font:600 14px ui-monospace,monospace;white-space:nowrap}
+.row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.row label small{display:block;color:var(--muted);font-size:12px}
+input,select{font:500 16px ui-monospace,monospace;width:110px;padding:8px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--fg);text-align:right}
+select{width:auto;max-width:190px;text-align:left;font-family:system-ui,sans-serif}
+input#mac{width:175px;text-align:left;font-size:14px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn-mo{background:var(--ok)} .btn-kh{background:var(--bad)}
+details summary{cursor:pointer;font-weight:700;list-style:none;display:flex;justify-content:space-between}
+details summary::after{content:"＋";color:var(--muted)}
+details[open] summary::after{content:"－"}
+#msg{min-height:1.4em;font-size:14px;margin-top:8px}
+#log{font:12px/1.5 ui-monospace,monospace;color:var(--muted);max-height:200px;overflow:auto;white-space:pre-wrap;word-break:break-word;margin:8px 0 0}
+.hint{background:var(--soft);border-radius:12px;padding:12px;font-size:14px;margin-top:12px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Kendo</h1>
+  <p>Khóa xe thông minh bằng beacon</p>
+</header>
+<main>
+
+  <section>
+    <div class="conn">
+      <span class="dot busy" id="dot"></span>
+      <div><b id="connTitle">Đang khởi động…</b><small id="connSub"></small></div>
+    </div>
+    <div class="hint" id="hint" hidden>Trên mạch: <b>giữ nút BOOT 3 giây</b> (hoặc cắm rút điện 3 lần, lần thứ 4 để luôn). Đèn xanh nháy nhanh là app sẽ tự kết nối.</div>
+    <div class="state">
+      <div class="box"><small>Xe</small><b id="xe">—</b></div>
+      <div class="box"><small>Beacon</small><b id="bc">—</b></div>
+    </div>
+    <div class="num" id="rssi">—</div>
+    <div class="meter"><div class="fill" id="fill"></div><div class="mk mo" id="mkMo"></div><div class="mk kh" id="mkKh"></div></div>
+    <div class="scale"><span>Xa</span><span><span class="ok">▌mở</span> &nbsp;<span class="bad">▌khóa</span></span><span>Sát</span></div>
+  </section>
+
+  <section id="wizard">
+    <h2>Cài đặt nhanh</h2>
+
+    <div class="step" id="s1">
+      <div class="n">1</div>
+      <div>
+        <p><b>Chọn beacon</b> (chìa khóa nhỏ). Để beacon gần điện thoại, lắc nhẹ, rồi bấm Tìm.</p>
+        <button class="small" id="btnScan" disabled>Tìm beacon</button>
+        <div class="list" id="blist"></div>
+        <div class="res" id="r1"></div>
+      </div>
+    </div>
+
+    <div class="step" id="s2">
+      <div class="n">2</div>
+      <div>
+        <p><b>Đứng ở chỗ muốn xe tự MỞ</b>, cầm beacon theo người. Đợi số sóng đứng yên khoảng 5 giây rồi bấm Đo.</p>
+        <button class="small" id="btnNear" disabled>Đo chỗ mở</button>
+        <div class="res" id="r2"></div>
+      </div>
+    </div>
+
+    <div class="step" id="s3">
+      <div class="n">3</div>
+      <div>
+        <p><b>Đi ra chỗ coi như đã rời xe</b>, đợi 5 giây rồi bấm Đo. Không thấy sóng cũng được.</p>
+        <button class="small" id="btnFar" disabled>Đo chỗ khóa</button>
+        <div class="res" id="r3"></div>
+      </div>
+    </div>
+
+    <button id="btnApply" disabled>Lưu khoảng cách</button>
+    <div id="msg"></div>
+  </section>
+
+  <section>
+    <h2>Thử relay</h2>
+    <div class="two">
+      <button class="btn-mo" id="btnTM" disabled>Thử MỞ</button>
+      <button class="btn-kh" id="btnTK" disabled>Thử KHÓA</button>
+    </div>
+  </section>
+
+  <section>
+    <details>
+      <summary>Cài đặt nâng cao</summary>
+      <div style="margin-top:8px">
+        <div class="row"><label for="mo">Ngưỡng MỞ <small>Càng âm = mở từ càng xa</small></label><input type="number" id="mo"></div>
+        <div class="row"><label for="khoa">Ngưỡng KHÓA <small>Âm hơn ngưỡng mở ít nhất 5</small></label><input type="number" id="khoa"></div>
+        <div class="row"><label for="cho">Chờ khóa (giây) <small>Nên 8–15</small></label><input type="number" id="cho" min="3" max="600"></div>
+        <div class="row"><label for="xn">Số lần xác nhận mở <small>1 = nhanh nhất</small></label><input type="number" id="xn" min="1" max="10"></div>
+        <div class="row"><label for="kich">Relay đóng (ms)</label><input type="number" id="kich" min="100" max="5000" step="100"></div>
+        <div class="row"><label for="den">Đèn xanh</label><select id="den"><option value="1">Theo xe</option><option value="2">Theo beacon</option><option value="0">Tắt</option></select></div>
+        <div class="row"><label for="thap">Kiểu relay</label><select id="thap"><option value="0">C1815 / mức cao</option><option value="1">Module mức thấp</option></select></div>
+        <div class="row"><label for="ngu">Chống khóa nhầm khi beacon ngủ</label><select id="ngu"><option value="1">Bật</option><option value="0">Tắt</option></select></div>
+        <div class="row"><label for="phut">Beacon ngủ tối đa (phút)</label><input type="number" id="phut" min="1" max="120"></div>
+        <div class="row"><label for="mac">Địa chỉ beacon</label><input type="text" id="mac" maxlength="17" spellcheck="false" autocapitalize="off"></div>
+        <button id="btnSave" disabled style="margin-top:10px">Lưu cài đặt</button>
+        <div id="msg2" style="font-size:14px;margin-top:8px"></div>
+      </div>
+    </details>
+  </section>
+
+  <button class="ghost" id="btnExit" disabled>Xong, thoát cài đặt</button>
+
+  <section>
+    <details>
+      <summary>Nhật ký</summary>
+      <pre id="log"></pre>
+    </details>
+  </section>
+</main>
+
+<script>
+const A = window.Android || { send(){}, scanBeacons(){}, retry(){}, disconnect(){} };
+const $ = id => document.getElementById(id);
+const cur = {};
+let tb = null, tbTime = 0;           // song trung binh moi nhat do MACH nghe duoc
+let near = null, far = null, farLost = false, chosenMac = null;
+let connected = false;
+
+function log(s){ const l=$("log"); l.textContent += s + "\n"; if (l.textContent.length > 8000) l.textContent = l.textContent.slice(-6000); l.scrollTop = l.scrollHeight; }
+function send(c){ A.send(c); log("> " + c); }
+
+// ---------- trang thai ket noi (goi tu Java) ----------
+window.onState = (st, name) => {
+  const T = {
+    scanning:     ["busy", "Đang tìm mạch…", "Mạch phải đang ở chế độ cài đặt"],
+    connecting:   ["busy", "Đang kết nối…", name],
+    connected:    ["ok",   "Đã kết nối", name],
+    disconnected: ["",     "Mất kết nối", name ? "Mạch đã thoát cài đặt hoặc ở quá xa" : ""],
+    bt_off:       ["",     "Bluetooth đang tắt", "Bấm Cho phép để bật Bluetooth"],
+    no_perm:      ["",     "Chưa cấp quyền", "Vào Cài đặt điện thoại → Ứng dụng → Kendo → Quyền → cho phép Thiết bị lân cận"],
+    no_bt:        ["",     "Điện thoại không có Bluetooth", ""]
+  }[st] || ["", st, ""];
+  $("dot").className = "dot " + T[0];
+  $("connTitle").textContent = T[1];
+  $("connSub").textContent = T[2] || "";
+  connected = st === "connected";
+  $("hint").hidden = !(st === "scanning" || st === "disconnected");
+  ["btnScan","btnTM","btnTK","btnSave","btnExit"].forEach(id => $(id).disabled = !connected);
+  updateWizard();
+  log("[" + st + "] " + (name||""));
+};
+
+// ---------- dong chu tu mach ----------
+window.onLine = s => {
+  let m;
+  if ((m = s.match(/^(mac|mo|khoa|xn|cho|kich|den|thap|ngu|phut)\s*=\s*(\S+)/))){
+    cur[m[1]] = m[2]; const el = $(m[1]); if (el) el.value = m[2]; markers(); return;
+  }
+  if ((m = s.match(/^Song TB (-?\d+) \((-?\d+)\) (GAN|XA)/))){
+    tb = +m[1]; tbTime = Date.now(); showRssi(tb); showBeacon(m[3]==="GAN"); updateWizard(); return;
+  }
+  if ((m = s.match(/^Song: KHONG nghe beacon \((\d+)s\)/i)) || /khong thay beacon/i.test(s)){
+    tb = null; tbTime = Date.now();
+    $("rssi").textContent = "Không nghe beacon"; $("fill").style.width = "0"; showBeacon(false); updateWizard(); return;
+  }
+  if ((m = s.match(/Xe: (DA MO|DA KHOA)\s*\|\s*Beacon: (O GAN|XA)/))){ showXe(m[1]==="DA MO"); showBeacon(m[2]==="O GAN"); }
+  if (/>>> Xe: MO KHOA/.test(s)) showXe(true);
+  else if (/>>> Xe: KHOA/.test(s)) showXe(false);
+  if ((m = s.match(/^Da luu: (\w+) (.+)$/))){ cur[m[1]] = m[2]; markers(); }
+  if (/^Loi/.test(s)) { $("msg").textContent = s; $("msg").className = "bad"; }
+  log(s);
+};
+
+function showXe(mo){ const e=$("xe"); e.textContent = mo ? "ĐÃ MỞ" : "ĐÃ KHÓA"; e.className = mo ? "ok" : "bad"; }
+function showBeacon(g){ const e=$("bc"); e.textContent = g ? "Ở gần" : "Xa"; e.className = g ? "ok" : "warn"; }
+const pct = v => Math.max(0, Math.min(100, (v + 100) / 60 * 100));
+function showRssi(v){ $("rssi").textContent = v + " dBm"; $("fill").style.width = pct(v) + "%"; }
+function markers(){
+  const mo = +(cur.mo ?? $("mo").value), kh = +(cur.khoa ?? $("khoa").value);
+  if (!isNaN(mo)) $("mkMo").style.left = pct(mo) + "%";
+  if (!isNaN(kh)) $("mkKh").style.left = pct(kh) + "%";
+}
+
+// ---------- buoc 1: tim beacon ----------
+window.onBeacons = (json, done) => {
+  let a = JSON.parse(json).filter(o => !o.ten.startsWith("KhoaXe"));
+  a.sort((x,y) => y.rssi - x.rssi);
+  a = a.slice(0, 8);
+  const L = $("blist"); L.innerHTML = "";
+  a.forEach(o => {
+    const d = document.createElement("div");
+    d.className = "item" + (o.mac === chosenMac ? " sel" : "");
+    const goiY = /holy|beacon|itag|tag|nrf/i.test(o.ten) ? " ⭐" : "";
+    d.innerHTML = `<div class="t"><b>${(o.ten || "Không tên").replace(/</g,"&lt;")}${goiY}</b><small>${o.mac}</small></div><span class="r">${o.rssi} dBm</span>`;
+    d.onclick = () => {
+      chosenMac = o.mac;
+      send("mac " + o.mac);
+      $("r1").innerHTML = `<span class="ok">✓ Đã chọn ${o.mac}</span>`;
+      [...L.children].forEach(c => c.classList.remove("sel")); d.classList.add("sel");
+      updateWizard();
+    };
+    L.appendChild(d);
+  });
+  $("btnScan").textContent = done ? "Tìm lại" : "Đang tìm…";
+  $("btnScan").disabled = !done || !connected;
+  if (done && !a.length) $("r1").textContent = "Không thấy thiết bị nào. Lắc beacon rồi tìm lại.";
+  else if (!chosenMac) $("r1").textContent = "Chọn beacon ở trên cùng (sóng mạnh nhất, thường có ⭐).";
+};
+$("btnScan").onclick = () => { $("btnScan").disabled = true; $("btnScan").textContent = "Đang tìm…"; A.scanBeacons(); };
+
+// ---------- buoc 2, 3: do ----------
+const fresh = () => Date.now() - tbTime < 3000;
+$("btnNear").onclick = () => {
+  if (!fresh() || tb === null){ $("r2").innerHTML = '<span class="bad">Mạch chưa nghe được beacon. Lắc beacon, đứng gần hơn rồi đo lại.</span>'; return; }
+  near = tb; $("r2").innerHTML = `<span class="ok">✓ Chỗ mở: ${near} dBm</span>`; updateWizard();
+};
+$("btnFar").onclick = () => {
+  if (!fresh()){ $("r3").textContent = "Chưa có số đo, đợi vài giây rồi bấm lại."; return; }
+  farLost = tb === null; far = tb;
+  $("r3").innerHTML = farLost ? '<span class="ok">✓ Chỗ khóa: mất sóng hẳn</span>' : `<span class="ok">✓ Chỗ khóa: ${far} dBm</span>`;
+  updateWizard();
+};
+
+function calc(){
+  if (near === null || (far === null && !farLost)) return null;
+  let mo = near - 3;
+  let khoa = farLost ? mo - 12 : Math.min(far + 2, mo - 8);
+  if (!farLost && far >= near - 5) return { err: "Hai chỗ đo gần nhau quá. Đi ra xa hơn rồi đo lại bước 3." };
+  khoa = Math.max(khoa, -105); mo = Math.min(mo, -30);
+  return { mo, khoa };
+}
+
+function updateWizard(){
+  const c = !!chosenMac || !!cur.mac;
+  $("s1").classList.toggle("done", !!chosenMac);
+  $("btnNear").disabled = !connected;
+  $("btnFar").disabled = !connected || near === null;
+  $("s2").classList.toggle("done", near !== null);
+  $("s3").classList.toggle("done", far !== null || farLost);
+  const r = calc();
+  $("btnApply").disabled = !connected || !r || !!r.err;
+  if (r && r.err){ $("msg").textContent = r.err; $("msg").className = "bad"; }
+  else if (r){ $("msg").textContent = `Sẽ lưu: mở khi sóng ≥ ${r.mo}, khóa khi sóng < ${r.khoa}`; $("msg").className = ""; }
+}
+
+function sendPair(mo, khoa){
+  // thu tu gui de mach khong bao loi
+  if (cur.mo === undefined || mo >= +cur.mo){ send("mo " + mo); send("khoa " + khoa); }
+  else { send("khoa " + khoa); send("mo " + mo); }
+}
+
+$("btnApply").onclick = () => {
+  const r = calc(); if (!r || r.err) return;
+  sendPair(r.mo, r.khoa);
+  $("msg").textContent = "Đã lưu. Thử đi xa rồi lại gần để kiểm tra."; $("msg").className = "ok";
+};
+
+// ---------- nang cao ----------
+$("btnSave").onclick = () => {
+  const mo = +$("mo").value, kh = +$("khoa").value, M = $("msg2");
+  if (kh > mo - 5){ M.textContent = "Ngưỡng KHÓA phải âm hơn ngưỡng MỞ ít nhất 5."; M.className = "bad"; return; }
+  const mac = $("mac").value.trim().toLowerCase();
+  if (!/^([0-9a-f]{2}:){5}[0-9a-f]{2}$/.test(mac)){ M.textContent = "Địa chỉ beacon phải có dạng xx:xx:xx:xx:xx:xx"; M.className = "bad"; return; }
+  let n = 0;
+  if (String(mo) !== String(cur.mo) || String(kh) !== String(cur.khoa)){ sendPair(mo, kh); n += 2; }
+  for (const k of ["xn","cho","kich","den","thap","ngu","phut"]){
+    const v = String($(k).value).trim();
+    if (v !== "" && v !== String(cur[k])){ send(k + " " + v); n++; }
+  }
+  if (mac !== cur.mac){ send("mac " + mac); n++; }
+  M.textContent = n ? "Đã lưu " + n + " thay đổi." : "Không có gì thay đổi."; M.className = "ok";
+};
+
+$("btnTM").onclick = () => send("thu mo");
+$("btnTK").onclick = () => send("thu khoa");
+$("btnExit").onclick = () => send("thoat");
+
+updateWizard();
+</script>
+</body>
+</html>
