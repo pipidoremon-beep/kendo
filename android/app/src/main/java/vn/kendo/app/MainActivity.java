@@ -72,6 +72,7 @@ public class MainActivity extends Activity {
     boolean daKetNoi = false;
     boolean dangDung = false;            // app dang mo tren man hinh
     boolean webSanSang = false;
+    boolean tuKetNoi = true;             // tu tim va ket noi lai (tat khi dien thoai chua la chia)
     String tenMach = "";
     int mtu = 23;
     final StringBuilder bufNhan = new StringBuilder();
@@ -146,6 +147,7 @@ public class MainActivity extends Activity {
             return;
         }
         if (daKetNoi) { trangThai("connected", tenMach); return; }
+        if (!tuKetNoi) { trangThai("paused", ""); return; }
         if (gatt == null) batQuet();
     }
 
@@ -205,7 +207,7 @@ public class MainActivity extends Activity {
             return;
         }
 
-        if (!daKetNoi && gatt == null && ten.startsWith(TIEN_TO_TEN)) {
+        if (tuKetNoi && !daKetNoi && gatt == null && ten.startsWith(TIEN_TO_TEN)) {
             dungQuet();
             ketNoi(d, ten);
         }
@@ -286,7 +288,7 @@ public class MainActivity extends Activity {
             daKetNoi = true;
             trangThai("connected", tenMach);
             gui("xem");
-            gui("song");
+            gui("song 1");
         });
     }
 
@@ -341,7 +343,8 @@ public class MainActivity extends Activity {
     class Cau {
         @JavascriptInterface public void send(String lenh) { h.post(() -> gui(lenh)); }
         @JavascriptInterface public void scanBeacons() { h.post(() -> timBeacon()); }
-        @JavascriptInterface public void retry() { h.post(() -> { dungQuet(); batDau(); }); }
+        @JavascriptInterface public void retry() { h.post(() -> { tuKetNoi = true; dungQuet(); batDau(); }); }
+        @JavascriptInterface public void setAuto(boolean b) { h.post(() -> { tuKetNoi = b; if (!b) dungQuet(); }); }
         @JavascriptInterface public void disconnect() { h.post(() -> { if (gatt != null) gatt.disconnect(); }); }
     }
 

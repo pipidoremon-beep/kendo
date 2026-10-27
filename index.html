@@ -2,257 +2,547 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Khóa Xe Beacon</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;800&family=JetBrains+Mono:wght@500&display=swap">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Kendo</title>
 <style>
-/* Bố cục: một cột kiểu "remote" trên điện thoại — trạng thái xe ở trên, chỉnh số ở giữa, nhật ký ở dưới */
+/* Man hinh chinh gon (trang thai, nut MO/KHOA, danh sach chia); "Huong dan & Cai dat" xo ra ben duoi */
 :root{
-  --bg:#eef1f4; --panel:#ffffff; --fg:#17202a; --muted:#5d6b78; --line:#d5dbe1;
-  --accent:#0a7cff; --ok:#159a55; --bad:#d23c3c; --warn:#c98a00;
-  --f-body:"Be Vietnam Pro",system-ui,sans-serif; --f-mono:"JetBrains Mono",ui-monospace,monospace;
-  color-scheme:light;
+  --bg:#eef2f6; --panel:#fff; --fg:#14202b; --muted:#5e6c79; --line:#d6dde4;
+  --brand:#0a6cdb; --ok:#13924f; --bad:#d23c3c; --warn:#b97c00; --soft:#e4effc;
+  --okbg:#dff3e7; --warnbg:#fbefd2;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0f1418; --panel:#182027; --fg:#e8eef3; --muted:#93a1ad; --line:#2a353f;
-  --accent:#4ea1ff; --ok:#34c777; --bad:#ff6b6b; --warn:#f0b429; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#0f1418; --panel:#182027; --fg:#e8eef3; --muted:#93a1ad; --line:#2a353f;
-  --accent:#4ea1ff; --ok:#34c777; --bad:#ff6b6b; --warn:#f0b429; color-scheme:dark}
-*{box-sizing:border-box}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0e1419; --panel:#172029; --fg:#e7edf3; --muted:#92a0ad; --line:#28343f;
+  --brand:#4a9dff; --ok:#33c477; --bad:#ff6b6b; --warn:#f0b429; --soft:#16283c;
+  --okbg:#173d2a; --warnbg:#3a2f12; color-scheme:dark}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
 html,body{margin:0}
-body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--f-body);
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
-  padding-block:calc(16px + env(safe-area-inset-top,0px)) calc(24px + env(safe-area-inset-bottom,0px))}
-main{max-width:460px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
-h1{font-size:22px;font-weight:800;margin:0;text-wrap:balance}
-h2{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
-.top{display:flex;justify-content:space-between;align-items:center;gap:12px}
-.pill{font-size:13px;padding:4px 10px;border-radius:99px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
-.pill.on{color:var(--ok);border-color:var(--ok)}
-section{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
-button{font:600 16px var(--f-body);border:0;border-radius:11px;padding:13px;cursor:pointer;width:100%;color:#fff;background:var(--accent)}
-button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-button:disabled{opacity:.45;cursor:not-allowed}
-.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
-.state{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.box{border:1px solid var(--line);border-radius:11px;padding:10px}
-.box small{display:block;color:var(--muted);font-size:12px}
-.box b{font-size:20px}
-.ok{color:var(--ok)} .bad{color:var(--bad)} .warn{color:var(--warn)}
-.rssi{margin-top:12px}
-.rssi .num{font:500 34px var(--f-mono);font-variant-numeric:tabular-nums}
-.meter{position:relative;height:14px;border-radius:7px;background:var(--line);margin-top:6px;overflow:hidden}
-.meter .fill{position:absolute;left:0;top:0;bottom:0;background:var(--accent);width:0;transition:width .3s}
-.meter .mk{position:absolute;top:-2px;bottom:-2px;width:3px}
+body{background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:#0a6cdb;color:#fff;padding:14px 16px 16px}
+header h1{margin:0;font-size:24px;font-weight:800}
+header p{margin:0;opacity:.9;font-size:14px}
+main{max-width:480px;margin:0 auto;padding:12px 14px 40px;display:flex;flex-direction:column;gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px}
+h3{margin:0 0 8px;font-size:12px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+button{font:600 16px system-ui,sans-serif;border:0;border-radius:12px;padding:13px;width:100%;color:#fff;background:var(--brand)}
+button:disabled{opacity:.4}
+button.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+button.sm{width:auto;padding:8px 12px;font-size:14px;border-radius:10px}
+button.danger{background:var(--bad)}
+.conn{display:flex;align-items:center;gap:10px}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--muted);flex:none}
+.dot.ok{background:var(--ok)} .dot.busy{background:var(--warn);animation:p 1s infinite}
+@keyframes p{50%{opacity:.3}}
+.conn b{display:block;font-size:16px;line-height:1.3}
+.conn small{color:var(--muted);font-size:13px}
+.badge{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:99px;margin-left:6px;vertical-align:middle}
+.badge.cd{background:var(--warnbg);color:var(--warn)}
+.st{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.box{border:1px solid var(--line);border-radius:12px;padding:8px 10px;min-width:0}
+.box small{color:var(--muted);font-size:12px;display:block}
+.box b{font-size:19px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ok{color:var(--ok)} .bad{color:var(--bad)} .warn{color:var(--warn)} .mut{color:var(--muted)}
+.rs{display:flex;justify-content:space-between;align-items:baseline;margin-top:12px;gap:8px}
+.rs b{font:600 20px ui-monospace,monospace;white-space:nowrap}
+.rs small{color:var(--muted);font-size:13px}
+.meter{position:relative;height:10px;border-radius:5px;background:var(--line);margin-top:6px;overflow:hidden}
+.meter i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--brand);transition:width .3s}
+.meter .mk{position:absolute;top:0;bottom:0;width:3px}
 .mk.mo{background:var(--ok)} .mk.kh{background:var(--bad)}
-.scale{display:flex;justify-content:space-between;font:12px var(--f-mono);color:var(--muted);margin-top:4px}
-.row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
-.row:first-of-type{border-top:0}
-.row label{min-width:0}
+.acc{margin-top:10px;font-size:13px;background:var(--soft);border-radius:10px;padding:6px 10px}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.big{border-radius:14px;padding:16px;font-size:17px;font-weight:700}
+.g{background:#13924f}.r{background:#c93636}
+.key{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.key:first-of-type{border-top:0}
+.key .t{display:flex;gap:10px;align-items:center;min-width:0}
+.key .t div{min-width:0}
+.key .t b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.key small{color:var(--muted);font-size:12px;display:block}
+.pill{font-size:12px;padding:3px 10px;border-radius:99px;font-weight:700;white-space:nowrap}
+.pill.near{background:var(--okbg);color:var(--ok)}.pill.far{background:var(--warnbg);color:var(--warn)}
+.empty{color:var(--muted);font-size:14px}
+.notice{background:var(--warnbg);border-radius:14px;padding:12px 14px;font-size:14px}
+.notice b{display:block;margin-bottom:4px}
+.toggle{background:transparent;color:var(--brand);border:1px solid var(--brand);border-radius:14px}
+.toggle.on{background:var(--soft)}
+details{border-top:1px solid var(--line)}
+details:first-of-type{border-top:0}
+summary{list-style:none;cursor:pointer;padding:12px 0;display:flex;justify-content:space-between;align-items:center;gap:10px}
+summary::-webkit-details-marker{display:none}
+summary b{font-size:15px;display:block}
+summary small{color:var(--muted);font-size:12px;display:block}
+summary::after{content:"›";color:var(--muted);font-size:22px;transition:transform .2s}
+details[open] summary::after{transform:rotate(90deg)}
+.body{padding:0 0 14px;display:flex;flex-direction:column;gap:10px}
+.guide{background:var(--soft);border-radius:12px;padding:10px 12px;font-size:14px}
+.guide ol{margin:6px 0 0;padding-left:20px}
+.row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px}
 .row label small{display:block;color:var(--muted);font-size:12px}
-select{width:auto!important;max-width:200px}
-input[type=number],input[type=text],select{font:500 16px var(--f-mono);width:110px;padding:7px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--fg);text-align:right}
-input[type=text]{width:180px;text-align:left;font-size:14px}
-input[type=range]{width:100%;accent-color:var(--accent)}
-.slider{grid-column:1/-1}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.btn-mo{background:var(--ok)} .btn-kh{background:var(--bad)}
-#msg{min-height:1.5em;font-size:14px;margin-top:8px}
-#log{font:12px/1.5 var(--f-mono);color:var(--muted);max-height:180px;overflow:auto;white-space:pre-wrap;word-break:break-word;margin:0}
-.note{font-size:13px;color:var(--muted)}
-@media (prefers-reduced-motion:reduce){.meter .fill{transition:none}}
+input,select{font:500 16px ui-monospace,monospace;width:110px;padding:8px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--fg);text-align:right}
+select{width:auto;max-width:200px;text-align:left;font-family:system-ui,sans-serif}
+input.txt{width:100%;text-align:left;font-family:system-ui,sans-serif}
+.list{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto}
+.item{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:var(--bg)}
+.item .t{min-width:0}.item .t b{display:block;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item small{font:12px ui-monospace,monospace;color:var(--muted)}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+.msg{font-size:14px;min-height:1.3em}
+.meas{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.meas .box b{font-size:17px}
+#log{font:12px/1.5 ui-monospace,monospace;color:var(--muted);max-height:220px;overflow:auto;white-space:pre-wrap;word-break:break-word;margin:0}
 </style>
 </head>
 <body>
+<header>
+  <h1>Kendo</h1>
+  <p>Khóa xe thông minh</p>
+</header>
 <main>
-  <div class="top">
-    <h1>Khóa Xe Beacon</h1>
-    <span class="pill" id="pill">Chưa kết nối</span>
+
+  <!-- TRANG THAI -->
+  <div class="card">
+    <div class="conn">
+      <span class="dot busy" id="dot"></span>
+      <div style="min-width:0"><b id="connTitle">Đang khởi động…</b><small id="connSub"></small></div>
+    </div>
+    <div class="st">
+      <div class="box"><small>Xe</small><b id="xe" class="mut">—</b></div>
+      <div class="box"><small>Chìa gần nhất</small><b id="ganNhat" class="mut">—</b></div>
+    </div>
+    <div class="rs"><small id="rsLabel">Sóng mạnh nhất</small><b id="rssi">—</b></div>
+    <div class="meter"><i id="fill"></i><span class="mk mo" id="mkMo" hidden></span><span class="mk kh" id="mkKh" hidden></span></div>
+    <div class="acc" id="accBox" hidden>🚗 Xe đang bật (ACC): tạm không tự khóa</div>
   </div>
 
-  <section id="connectBox">
-    <button id="btnConnect">Kết nối mạch qua Bluetooth</button>
-    <p class="note" id="hint">Trên mạch: giữ BOOT 3 giây (đèn nháy nhanh), rồi bấm nút trên và chọn <b>KhoaXe-xxxx</b> (mỗi mạch một tên).</p>
-  </section>
+  <div class="notice" id="notice" hidden>
+    <b id="noticeTitle"></b><span id="noticeText"></span>
+    <div style="margin-top:10px"><button class="sm" id="btnRetry">Thử lại</button></div>
+  </div>
 
-  <section>
-    <h2>Trạng thái</h2>
-    <div class="state">
-      <div class="box"><small>Xe</small><b id="xe">—</b></div>
-      <div class="box"><small>Beacon</small><b id="bc">—</b></div>
+  <div class="btns">
+    <button class="big g" id="btnMo" disabled>🔓 MỞ XE</button>
+    <button class="big r" id="btnKhoa" disabled>🔒 KHÓA XE</button>
+  </div>
+
+  <div class="card">
+    <h3>Chìa khóa</h3>
+    <div id="keyList"><div class="empty">Chưa có dữ liệu</div></div>
+  </div>
+
+  <button class="toggle" id="btnToggle">📖 Hướng dẫn &amp; Cài đặt ▼</button>
+
+  <!-- CAI DAT (xo ra) -->
+  <div class="card" id="settings" hidden>
+
+    <div class="guide" style="margin-bottom:6px">
+      <b>Lần đầu sử dụng?</b>
+      <ol>
+        <li>Trên mạch: <b>giữ nút BOOT 3 giây</b> (hoặc cắm rút điện 3 lần, lần thứ 4 để luôn). Đèn xanh nháy nhanh.</li>
+        <li>App tự kết nối. Thêm <b>beacon</b> và/hoặc <b>điện thoại</b> ở mục "Thêm / xóa chìa".</li>
+        <li>Vào "Chỉnh khoảng cách", đo chỗ muốn mở và chỗ muốn khóa cho từng chìa.</li>
+        <li>Bấm "Thử MỞ / Thử KHÓA" để kiểm tra, xong bấm "Thoát chế độ cài đặt".</li>
+      </ol>
     </div>
-    <div class="rssi">
-      <small class="note">Sóng trung bình (RSSI)</small>
-      <div class="num" id="rssi">—</div>
-      <div class="meter"><div class="fill" id="fill"></div><div class="mk mo" id="mkMo"></div><div class="mk kh" id="mkKh"></div></div>
-      <div class="scale"><span>-100 xa</span><span><span class="ok">▌mở</span> <span class="bad">▌khóa</span></span><span>-40 sát</span></div>
-    </div>
-  </section>
 
-  <section>
-    <h2>Khoảng cách</h2>
-    <div class="row"><label for="mo">Ngưỡng MỞ <small>Càng âm = mở từ càng xa</small></label><input type="number" id="mo" min="-110" max="-1"></div>
-    <input class="slider" type="range" id="moR" min="-100" max="-40" aria-label="Ngưỡng mở">
-    <div class="row"><label for="khoa">Ngưỡng KHÓA <small>Âm hơn ngưỡng mở ít nhất 5</small></label><input type="number" id="khoa" min="-110" max="-1"></div>
-    <input class="slider" type="range" id="khoaR" min="-110" max="-45" aria-label="Ngưỡng khóa">
-  </section>
+    <details id="dKeys">
+      <summary><div><b>🔑 Thêm / xóa chìa</b><small id="sumKeys">Beacon, điện thoại</small></div></summary>
+      <div class="body">
+        <div id="keyEdit"></div>
+        <button class="sm" id="btnAddB">＋ Thêm beacon</button>
+        <div id="scanBox" hidden>
+          <div class="msg mut" id="scanMsg">Để beacon gần điện thoại, lắc nhẹ…</div>
+          <div class="list" id="blist"></div>
+        </div>
+        <button class="sm ghost" id="btnAddP">＋ Thêm điện thoại</button>
+        <div class="guide" id="phoneGuide" hidden>
+          <b>Thêm điện thoại làm chìa</b>
+          <ol>
+            <li>Mạch phải đang ở <b>chế độ cài đặt</b> (giữ BOOT 3 giây).</li>
+            <li>Trên điện thoại cần thêm: vào <b>Cài đặt → Bluetooth</b>, bấm <b id="tenMach2">KhoaXe-…</b>, chọn <b>Ghép nối</b>.</li>
+            <li>Điện thoại sẽ hiện trong danh sách chìa. Từ đó lại gần xe là <b>tự kết nối</b>, không cần mở app.</li>
+          </ol>
+          <div style="margin-top:6px">Android: nếu bàn phím ảo không hiện sau khi ghép, vào <b>Cài đặt → Ngôn ngữ & bàn phím → Bàn phím vật lý</b>, bật <b>"Hiện bàn phím ảo"</b>.</div>
+        </div>
+        <div class="msg" id="msgKeys"></div>
+      </div>
+    </details>
 
-  <section>
-    <h2>Cài đặt khác</h2>
-    <div class="row"><label for="cho">Chờ khóa (giây) <small>Đi xa bao lâu thì khóa</small></label><input type="number" id="cho" min="3" max="600"></div>
-    <div class="row"><label for="xn">Số lần xác nhận mở <small>1 = nhanh nhất</small></label><input type="number" id="xn" min="1" max="10"></div>
-    <div class="row"><label for="kich">Relay đóng (ms)</label><input type="number" id="kich" min="100" max="5000" step="100"></div>
-    <div class="row"><label for="den">Đèn xanh</label><select id="den"><option value="1">Theo xe</option><option value="2">Theo beacon</option><option value="0">Tắt</option></select></div>
-    <div class="row"><label for="thap">Kiểu relay</label><select id="thap"><option value="0">C1815 / kích mức cao</option><option value="1">Module kích mức thấp</option></select></div>
-    <div class="row"><label for="ngu">Chống khóa nhầm khi beacon ngủ</label><select id="ngu"><option value="1">Bật</option><option value="0">Tắt</option></select></div>
-    <div class="row"><label for="phut">Beacon ngủ tối đa (phút)</label><input type="number" id="phut" min="1" max="120"></div>
-    <div class="row"><label for="mac">Địa chỉ beacon</label><input type="text" id="mac" maxlength="17" spellcheck="false" autocapitalize="off"></div>
-    <button id="btnSave" disabled>Lưu cài đặt</button>
-    <div id="msg"></div>
-  </section>
+    <details id="dMeas">
+      <summary><div><b>📏 Chỉnh khoảng cách</b><small>Đo chỗ mở · đo chỗ khóa cho từng chìa</small></div></summary>
+      <div class="body">
+        <div class="row"><label for="measKey">Chìa cần chỉnh</label><select id="measKey"></select></div>
+        <div class="rs" style="margin-top:0"><small>Sóng chìa này (mạch đo được)</small><b id="measNow">—</b></div>
+        <div class="meas">
+          <button class="sm" id="btnNear">Đo chỗ MỞ</button>
+          <button class="sm ghost" id="btnFar">Đo chỗ KHÓA</button>
+        </div>
+        <div class="meas">
+          <div class="box"><small>Chỗ mở</small><b id="vNear">—</b></div>
+          <div class="box"><small>Chỗ khóa</small><b id="vFar">—</b></div>
+        </div>
+        <div class="msg" id="msgMeas"></div>
+        <div class="row"><label for="inMo">Ngưỡng MỞ <small>Càng âm = mở từ càng xa</small></label><input type="number" id="inMo"></div>
+        <div class="row"><label for="inKh">Ngưỡng KHÓA <small>Âm hơn ngưỡng mở ít nhất 5</small></label><input type="number" id="inKh"></div>
+        <button id="btnSaveMeas">Lưu khoảng cách</button>
+      </div>
+    </details>
 
-  <section>
-    <h2>Thử relay</h2>
-    <div class="two">
-      <button class="btn-mo" id="btnTM" disabled>Thử MỞ</button>
-      <button class="btn-kh" id="btnTK" disabled>Thử KHÓA</button>
-    </div>
-  </section>
+    <details>
+      <summary><div><b>⏱ Thời gian</b><small id="sumTime">Chờ khóa · xác nhận · relay</small></div></summary>
+      <div class="body">
+        <div class="row"><label for="cho">Chờ khóa (giây) <small>Mất hết chìa bao lâu thì khóa. Nên 8–15</small></label><input type="number" id="cho" min="3" max="600"></div>
+        <div class="row"><label for="xn">Số lần xác nhận mở <small>1 = nhanh nhất</small></label><input type="number" id="xn" min="1" max="10"></div>
+        <div class="row"><label for="kich">Relay đóng (ms)</label><input type="number" id="kich" min="100" max="5000" step="100"></div>
+        <button id="btnSaveTime">Lưu</button>
+        <div class="msg" id="msgTime"></div>
+      </div>
+    </details>
 
-  <button class="ghost" id="btnExit" disabled>Thoát cài đặt</button>
+    <details>
+      <summary><div><b>⚙ Nâng cao</b><small>Kiểu relay · đèn · ACC · chống khóa nhầm</small></div></summary>
+      <div class="body">
+        <div class="row"><label for="thap">Kiểu relay</label><select id="thap"><option value="0">C1815 / mức cao</option><option value="1">Module mức thấp</option></select></div>
+        <div class="row"><label for="den">Đèn xanh</label><select id="den"><option value="1">Theo xe</option><option value="2">Theo chìa</option><option value="0">Tắt</option></select></div>
+        <div class="row"><label for="acc">Dùng dây ACC <small>Xe đang bật thì không tự khóa</small></label><select id="acc"><option value="0">Tắt</option><option value="1">Bật</option></select></div>
+        <div class="row"><label for="ngu">Chống khóa nhầm khi beacon ngủ</label><select id="ngu"><option value="1">Bật</option><option value="0">Tắt</option></select></div>
+        <div class="row"><label for="phut">Beacon ngủ tối đa (phút)</label><input type="number" id="phut" min="1" max="120"></div>
+        <button id="btnSaveAdv">Lưu</button>
+        <div class="msg" id="msgAdv"></div>
+      </div>
+    </details>
 
-  <section>
-    <h2>Nhật ký</h2>
-    <pre id="log"></pre>
-  </section>
+    <details>
+      <summary><div><b>🧪 Thử relay</b><small>Chỉ bấm relay, không đổi trạng thái xe</small></div></summary>
+      <div class="body">
+        <div class="btns">
+          <button class="sm g" id="btnTM">Thử MỞ</button>
+          <button class="sm r" id="btnTK">Thử KHÓA</button>
+        </div>
+      </div>
+    </details>
+
+    <details>
+      <summary><div><b>📜 Nhật ký</b><small>Lệnh đã gửi, mạch trả lời</small></div></summary>
+      <div class="body"><pre id="log"></pre></div>
+    </details>
+
+    <details id="dExit">
+      <summary><div><b>🚪 Thoát chế độ cài đặt</b><small id="sumExit">Mạch quay về chạy bình thường</small></div></summary>
+      <div class="body"><button class="ghost" id="btnExit">Thoát chế độ cài đặt</button></div>
+    </details>
+  </div>
 </main>
 
 <script>
-const NUS = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-const RX  = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"; // điện thoại -> mạch
-const TX  = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"; // mạch -> điện thoại
+/* Ban WEB: dung Web Bluetooth (Chrome Android, Bluefy tren iPhone) thay cho phan Java cua app Android */
+(function(){
+  if (window.Android) return;
+  const NUS="6e400001-b5a3-f393-e0a9-e50e24dcca9e", RX="6e400002-b5a3-f393-e0a9-e50e24dcca9e", TX="6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+  let dev=null, rx=null, buf="", q=Promise.resolve();
+  const st=(s,n)=>window.onState&&window.onState(s,n||"");
+  async function connect(){
+    if(!navigator.bluetooth){ st("no_bt"); return; }
+    try{
+      dev = await navigator.bluetooth.requestDevice({ filters:[{namePrefix:"KhoaXe"}], optionalServices:[NUS] });
+      dev.addEventListener("gattserverdisconnected", ()=>{ rx=null; st("paused"); });
+      st("connecting", dev.name);
+      const sv = await (await dev.gatt.connect()).getPrimaryService(NUS);
+      rx = await sv.getCharacteristic(RX);
+      const tx = await sv.getCharacteristic(TX);
+      await tx.startNotifications();
+      tx.addEventListener("characteristicvaluechanged", e=>{
+        buf += new TextDecoder().decode(e.target.value);
+        let i; while((i=buf.indexOf("\n"))>=0){ const l=buf.slice(0,i).trim(); buf=buf.slice(i+1); if(l) window.onLine(l); }
+      });
+      st("connected", dev.name);
+      send("xem"); send("song 1");
+    }catch(e){ st("paused"); }
+  }
+  function send(c){
+    q = q.then(async()=>{ if(!rx) return; const d=new TextEncoder().encode(c+"\n");
+      for(let i=0;i<d.length;i+=20) await rx.writeValue(d.slice(i,i+20)); }).catch(()=>{});
+  }
+  window.Android = {
+    send, retry: connect,
+    disconnect(){ if(dev&&dev.gatt.connected) dev.gatt.disconnect(); },
+    setAuto(){},
+    scanBeacons(){ setTimeout(()=>window.onBeacons("[]", true), 300);
+      setTimeout(()=>{ const m=document.getElementById("scanMsg"); if(m) m.textContent="Bản web không tự tìm được beacon. Dùng app Android Kendo để thêm beacon, hoặc nhờ máy Android thêm giúp."; }, 400); }
+  };
+  window.addEventListener("load", ()=>{
+    st("paused");
+    document.getElementById("noticeTitle").textContent = "Kết nối với mạch";
+    document.getElementById("noticeText").textContent = navigator.bluetooth
+      ? "Lại gần xe rồi bấm nút bên dưới, chọn KhoaXe-… trong danh sách."
+      : "Trình duyệt này không hỗ trợ Bluetooth. Android: mở bằng Chrome. iPhone: dùng app Bluefy.";
+    document.getElementById("btnRetry").textContent = "Kết nối";
+    document.getElementById("notice").hidden = false;
+  });
+})();
+</script>
+<script>
+const A = window.Android || { send(){}, scanBeacons(){}, retry(){}, disconnect(){}, setAuto(){} };
 const $ = id => document.getElementById(id);
-let dev = null, rx = null, buf = "", queue = Promise.resolve();
-const cur = {};            // cài đặt mạch đang có
-const FIELDS = ["mo","khoa","xn","cho","kich","den","thap","ngu","phut","mac"];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const khongDau = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g,"d").replace(/Đ/g,"D").replace(/[^\x20-\x7e]/g,"").trim();
 
-function log(s){ const l=$("log"); l.textContent += s + "\n"; l.scrollTop = l.scrollHeight; }
-function msg(s, cls){ const m=$("msg"); m.textContent=s; m.className=cls||""; }
+let cfg = {}, keys = {}, keyOrder = [], live = {}, newKeys = {};
+let connected = false, allowed = false, cd = false, xeMo = null, accOn = false;
+let meas = { near:null, far:null, farLost:false };
 
-function setConnected(on){
-  $("pill").textContent = on ? "Đã kết nối" : "Chưa kết nối";
-  $("pill").classList.toggle("on", on);
-  ["btnSave","btnTM","btnTK","btnExit"].forEach(id => $(id).disabled = !on);
-  $("btnConnect").textContent = on ? "Ngắt kết nối" : "Kết nối mạch qua Bluetooth";
-}
+function log(s){ const l=$("log"); l.textContent += s + "\n"; if (l.textContent.length > 9000) l.textContent = l.textContent.slice(-7000); l.scrollTop = l.scrollHeight; }
+function send(c){ A.send(c); log("> " + c); }
+function setMsg(id, text, cls){ const m=$(id); m.textContent = text; m.className = "msg " + (cls||""); }
 
-if (!navigator.bluetooth){
-  $("hint").innerHTML = "Trình duyệt này không hỗ trợ Bluetooth web. Android: mở trang bằng <b>Chrome</b>. iPhone: dùng app <b>Bluefy</b>.";
-  $("btnConnect").disabled = true;
-}
-
-$("btnConnect").onclick = async () => {
-  if (dev && dev.gatt.connected){ dev.gatt.disconnect(); return; }
-  try{
-    dev = await navigator.bluetooth.requestDevice({ acceptAllDevices:true, optionalServices:[NUS] });
-    dev.addEventListener("gattserverdisconnected", () => { setConnected(false); log("— Đã ngắt kết nối"); });
-    log("Đang kết nối " + (dev.name||"thiết bị") + "...");
-    const srv = await dev.gatt.connect();
-    const svc = await srv.getPrimaryService(NUS);
-    rx = await svc.getCharacteristic(RX);
-    const tx = await svc.getCharacteristic(TX);
-    await tx.startNotifications();
-    tx.addEventListener("characteristicvaluechanged", e => {
-      buf += new TextDecoder().decode(e.target.value);
-      let i;
-      while ((i = buf.indexOf("\n")) >= 0){ const line = buf.slice(0,i).trim(); buf = buf.slice(i+1); if (line) onLine(line); }
-    });
-    setConnected(true);
-    log("Đã kết nối");
-    await send("xem");
-    await send("song");
-  }catch(err){
-    log("Lỗi: " + err.message);
-    if (String(err).includes("service")) msg("Thiết bị này không phải mạch khóa xe, hoặc mạch chưa vào chế độ cài đặt.", "bad");
-  }
+// ---------- trang thai ket noi (tu Java) ----------
+window.onState = (st, name) => {
+  const T = {
+    scanning:     ["busy", "Đang tìm mạch…", "Lại gần xe, bật Bluetooth"],
+    connecting:   ["busy", "Đang kết nối…", name],
+    connected:    ["ok",   "Đã kết nối", name],
+    disconnected: ["",     "Mất kết nối", "Đang tìm lại…"],
+    paused:       ["",     "Chưa kết nối", "Bấm Thử lại khi đã sẵn sàng"],
+    bt_off:       ["",     "Bluetooth đang tắt", "Bấm Cho phép để bật Bluetooth"],
+    no_perm:      ["",     "Chưa cấp quyền", "Cài đặt → Ứng dụng → Kendo → Quyền → cho phép Thiết bị lân cận"],
+    no_bt:        ["",     "Điện thoại không có Bluetooth", ""]
+  }[st] || ["", st, ""];
+  $("dot").className = "dot " + T[0];
+  $("connTitle").textContent = T[1];
+  $("connSub").textContent = T[2] || "";
+  connected = st === "connected";
+  if (!connected){ allowed = false; live = {}; }
+  if (st === "connected") $("notice").hidden = true;
+  render();
+  log("[" + st + "] " + (name||""));
 };
 
-function send(cmd){
-  queue = queue.then(async () => {
-    if (!rx) return;
-    const data = new TextEncoder().encode(cmd + "\n");
-    for (let i=0;i<data.length;i+=20) await rx.writeValue(data.slice(i,i+20));
-    log("> " + cmd);
-    await new Promise(r => setTimeout(r, 150));
-  }).catch(e => log("Lỗi gửi: " + e.message));
-  return queue;
+function showNotice(title, text){
+  $("noticeTitle").textContent = title; $("noticeText").textContent = text; $("notice").hidden = false;
 }
+$("btnRetry").onclick = () => { $("notice").hidden = true; A.retry(); };
 
-function onLine(s){
+// ---------- dong chu tu mach ----------
+window.onLine = s => {
   let m;
-  if ((m = s.match(/^(mac|mo|khoa|xn|cho|kich|den|thap|ngu|phut)\s*=\s*(\S+)/))){
-    cur[m[1]] = m[2]; fill(m[1], m[2]); markers(); return;
-  }
-  if ((m = s.match(/^Song TB (-?\d+) \((-?\d+)\) (GAN|XA)/))){
-    showRssi(+m[1]); showBeacon(m[3]==="GAN"); return;
-  }
-  if ((m = s.match(/^Song: KHONG nghe beacon \((\d+)s\)/))){
-    $("rssi").textContent = "Mất sóng " + m[1] + "s"; $("fill").style.width = "0"; showBeacon(false); return;
-  }
-  if ((m = s.match(/Xe: (DA MO|DA KHOA)\s*\|\s*Beacon: (O GAN|XA)/))){ showXe(m[1]==="DA MO"); showBeacon(m[2]==="O GAN"); }
-  if (/>>> Xe: MO KHOA/.test(s)) showXe(true);
-  else if (/>>> Xe: KHOA/.test(s)) showXe(false);
-  if (/^Da luu: (\w+) (.+)$/.test(s)){ const [,k,v] = s.match(/^Da luu: (\w+) (.+)$/); cur[k]=v; markers(); }
-  if (/^Loi/.test(s)) msg(s, "bad");
   log(s);
-}
-
-function fill(k, v){
-  const el = $(k); if (!el) return;
-  el.value = v;
-  if (k==="mo") $("moR").value = v;
-  if (k==="khoa") $("khoaR").value = v;
-}
-function showXe(mo){ const e=$("xe"); e.textContent = mo ? "ĐÃ MỞ" : "ĐÃ KHÓA"; e.className = mo ? "ok" : "bad"; }
-function showBeacon(g){ const e=$("bc"); e.textContent = g ? "Ở gần" : "Xa"; e.className = g ? "ok" : "warn"; }
-const pct = v => Math.max(0, Math.min(100, (v + 100) / 60 * 100));
-function showRssi(v){ $("rssi").textContent = v + " dBm"; $("fill").style.width = pct(v) + "%"; }
-function markers(){
-  const mo = +$("mo").value, kh = +$("khoa").value;
-  if (!isNaN(mo)) $("mkMo").style.left = pct(mo) + "%";
-  if (!isNaN(kh)) $("mkKh").style.left = pct(kh) + "%";
-}
-
-$("moR").oninput = () => { $("mo").value = $("moR").value; markers(); };
-$("khoaR").oninput = () => { $("khoa").value = $("khoaR").value; markers(); };
-$("mo").oninput = () => { $("moR").value = $("mo").value; markers(); };
-$("khoa").oninput = () => { $("khoaR").value = $("khoa").value; markers(); };
-
-$("btnSave").onclick = async () => {
-  const mo = +$("mo").value, kh = +$("khoa").value;
-  if (kh > mo - 5){ msg("Ngưỡng KHÓA phải âm hơn ngưỡng MỞ ít nhất 5 (nên 10).", "bad"); return; }
-  const mac = $("mac").value.trim().toLowerCase();
-  if (!/^([0-9a-f]{2}:){5}[0-9a-f]{2}$/.test(mac)){ msg("Địa chỉ beacon phải có dạng xx:xx:xx:xx:xx:xx", "bad"); return; }
-  msg("Đang lưu...", "");
-  // Thứ tự gửi để mạch không báo lỗi khi đổi cả 2 ngưỡng
-  const order = (mo > +cur.mo) ? ["mo","khoa"] : ["khoa","mo"];
-  const all = [...order, "xn","cho","kich","den","thap","ngu","phut","mac"];
-  let n = 0;
-  for (const k of all){
-    const v = k==="mac" ? mac : String($(k).value).trim();
-    if (v !== "" && v !== String(cur[k])){ await send(k + " " + v); n++; }
+  if (s.startsWith("CFG ")){
+    cfg = {};
+    s.slice(4).split(" ").forEach(kv => { const i = kv.indexOf("="); if (i > 0) cfg[kv.slice(0,i)] = kv.slice(i+1); });
+    allowed = true;
+    cd = cfg.cd === "1"; xeMo = cfg.xe === "1"; accOn = cfg.accon === "1";
+    newKeys = {};
+    ["cho","xn","kich","den","thap","ngu","phut","acc"].forEach(k => { if ($(k) && cfg[k] !== undefined) $(k).value = cfg[k]; });
+    return;
   }
-  msg(n ? "Đã gửi " + n + " thay đổi. Mạch lưu ngay." : "Không có gì thay đổi.", "ok");
+  if ((m = s.match(/^KEY (\w\d) (\S+) (-?\d+) (-?\d+) ?(.*)$/))){
+    newKeys[m[1]] = { id:m[1], type:m[1][0], mac:m[2], mo:+m[3], kh:+m[4], ten:m[5] || (m[1][0]==="b" ? "Beacon" : "Điện thoại") };
+    return;
+  }
+  if (s === "END"){ keys = newKeys; keyOrder = Object.keys(keys); fillMeasKeys(); render(); return; }
+  if (s.startsWith("ST ")){
+    const p = s.split(" ");
+    xeMo = p[1] === "1"; accOn = p[2] === "1";
+    live = {};
+    for (const t of p.slice(3)){ const [id, r, g] = t.split(":"); live[id] = { rssi: r === "x" ? null : +r, near: g === "1" }; }
+    render(); updateMeasNow(); return;
+  }
+  if (s.startsWith("ERR_KHOA")){
+    allowed = false; A.setAuto(false); A.disconnect();
+    showNotice("Điện thoại này chưa là chìa của xe", "Trên mạch: giữ nút BOOT 3 giây (đèn nháy nhanh), rồi bấm Thử lại. Khi điện thoại hỏi Ghép nối, bấm Đồng ý.");
+    render(); return;
+  }
+  if (s.startsWith("NEW ")){ send("xem"); setMsg("msgKeys", "✓ Đã thêm điện thoại này làm chìa", "ok"); return; }
+  if (s === "CD 1"){ cd = true; render(); return; }
+  if (s === "CD 0"){ cd = false; render(); return; }
+  if (/>>> Xe: MO KHOA/.test(s)){ xeMo = true; render(); return; }
+  if (/>>> Xe: KHOA/.test(s)){ xeMo = false; render(); return; }
+  if ((m = s.match(/^OK nguong (\w\d) (-?\d+) (-?\d+)/))){
+    if (keys[m[1]]){ keys[m[1]].mo = +m[2]; keys[m[1]].kh = +m[3]; }
+    setMsg("msgMeas", "✓ Đã lưu khoảng cách cho " + (keys[m[1]] ? keys[m[1]].ten : m[1]), "ok"); render(); return;
+  }
+  if (s.startsWith("OK themb")){ setMsg("msgKeys", "✓ Đã thêm beacon", "ok"); $("scanBox").hidden = true; return; }
+  if (s.startsWith("OK xoa")){ setMsg("msgKeys", "✓ Đã xóa chìa", "ok"); return; }
+  if (s.startsWith("OK ten")){ send("xem"); return; }
+  if (s.startsWith("Loi")){ ["msgKeys","msgMeas","msgTime","msgAdv"].forEach(id => { if ($(id).closest("details").open) setMsg(id, s, "bad"); }); }
 };
 
+// ---------- ve giao dien ----------
+const pct = v => Math.max(0, Math.min(100, (v + 100) / 60 * 100));
+const icon = k => k.type === "b" ? "🔑" : "📱";
+
+function render(){
+  // nut
+  $("btnMo").disabled = !(connected && allowed);
+  $("btnKhoa").disabled = !(connected && allowed);
+  ["btnAddB","btnAddP","btnSaveMeas","btnSaveTime","btnSaveAdv","btnTM","btnTK","btnExit","btnNear","btnFar"].forEach(id => $(id).disabled = !(connected && allowed));
+
+  // ten mach + che do cai dat
+  if (connected && cfg.ten){
+    $("connSub").innerHTML = esc(cfg.ten) + (cd ? '<span class="badge cd">Chế độ cài đặt</span>' : "");
+    $("tenMach2").textContent = cfg.ten;
+  }
+  $("sumExit").textContent = cd ? "Mạch đang ở chế độ cài đặt, đèn nháy nhanh" : "Mạch đang chạy bình thường";
+
+  // xe
+  const xe = $("xe");
+  if (xeMo === null || !connected){ xe.textContent = "—"; xe.className = "mut"; }
+  else { xe.textContent = xeMo ? "ĐÃ MỞ" : "ĐÃ KHÓA"; xe.className = xeMo ? "ok" : "bad"; }
+  $("accBox").hidden = !(connected && accOn);
+
+  // chia gan nhat
+  let best = null;
+  for (const id of keyOrder){ const l = live[id]; if (l && l.rssi !== null && (!best || l.rssi > live[best].rssi)) best = id; }
+  const gn = $("ganNhat");
+  if (!connected){ gn.textContent = "—"; gn.className = "mut"; }
+  else if (best){ gn.textContent = keys[best].ten; gn.className = live[best].near ? "ok" : "warn"; }
+  else { gn.textContent = "Không thấy"; gn.className = "warn"; }
+  if (best){
+    const k = keys[best];
+    $("rsLabel").textContent = "Sóng " + k.ten;
+    $("rssi").textContent = live[best].rssi + " dBm";
+    $("fill").style.width = pct(live[best].rssi) + "%";
+    $("mkMo").hidden = $("mkKh").hidden = false;
+    $("mkMo").style.left = pct(k.mo) + "%"; $("mkKh").style.left = pct(k.kh) + "%";
+  } else {
+    $("rsLabel").textContent = "Sóng mạnh nhất"; $("rssi").textContent = "—"; $("fill").style.width = "0";
+    $("mkMo").hidden = $("mkKh").hidden = true;
+  }
+
+  // danh sach chia (man hinh chinh)
+  const L = $("keyList");
+  if (!keyOrder.length){
+    L.innerHTML = '<div class="empty">' + (connected && allowed ? "Chưa có chìa nào. Mở \"Hướng dẫn & Cài đặt\" để thêm." : "Kết nối với mạch để xem chìa") + "</div>";
+  } else {
+    L.innerHTML = keyOrder.map(id => {
+      const k = keys[id], l = live[id];
+      const sub = !l || l.rssi === null ? "Không thấy" : l.rssi + " dBm";
+      const near = l && l.near;
+      const me = cfg.me !== undefined && ("p" + cfg.me) === id ? " (máy này)" : "";
+      return `<div class="key"><div class="t"><span>${icon(k)}</span><div><b>${esc(k.ten)}${me}</b><small>${sub}</small></div></div><span class="pill ${near ? "near" : "far"}">${near ? "Gần" : "Xa"}</span></div>`;
+    }).join("");
+  }
+
+  // danh sach sua chia
+  const E = $("keyEdit");
+  $("sumKeys").textContent = keyOrder.length ? "Đang có " + keyOrder.length + " chìa" : "Beacon, điện thoại";
+  E.innerHTML = keyOrder.map(id => {
+    const k = keys[id];
+    return `<div class="item" data-id="${id}"><div class="t"><b>${icon(k)} ${esc(k.ten)}</b><small>${esc(k.mac)} · mở ${k.mo} / khóa ${k.kh}</small></div>
+      <div class="acts"><button class="sm ghost" data-act="ren">Đổi tên</button><button class="sm danger" data-act="del">Xóa</button></div></div>
+      <div class="row" id="ren-${id}" hidden><input class="txt" maxlength="20" placeholder="Tên mới" id="renIn-${id}"><button class="sm" data-act="renOk" data-id="${id}">Lưu</button></div>`;
+  }).join("");
+}
+
+$("keyEdit").onclick = e => {
+  const b = e.target.closest("button"); if (!b) return;
+  const it = b.closest(".item"); const id = b.dataset.id || (it ? it.dataset.id : "");
+  if (b.dataset.act === "ren"){ $("ren-" + id).hidden = false; $("renIn-" + id).value = keys[id].ten; $("renIn-" + id).focus(); }
+  if (b.dataset.act === "renOk"){
+    const t = khongDau($("renIn-" + id).value).slice(0, 20);
+    if (t) send("ten " + id + " " + t);
+  }
+  if (b.dataset.act === "del"){
+    if (b.dataset.sure){ send("xoa " + id); }
+    else { b.dataset.sure = "1"; b.textContent = "Bấm lần nữa để xóa"; setTimeout(() => { b.dataset.sure = ""; b.textContent = "Xóa"; }, 4000); }
+  }
+};
+
+// ---------- nut chinh ----------
+$("btnMo").onclick = () => send("lenh mo");
+$("btnKhoa").onclick = () => send("lenh khoa");
+$("btnToggle").onclick = () => {
+  const s = $("settings"); s.hidden = !s.hidden;
+  $("btnToggle").textContent = "📖 Hướng dẫn & Cài đặt " + (s.hidden ? "▼" : "▲");
+  $("btnToggle").classList.toggle("on", !s.hidden);
+  if (!s.hidden) s.scrollIntoView({ behavior:"smooth" });
+};
+
+// ---------- them beacon ----------
+$("btnAddB").onclick = () => { $("scanBox").hidden = false; $("blist").innerHTML = ""; setMsg("scanMsg", "Đang tìm… để beacon gần điện thoại và lắc nhẹ", "mut"); $("btnAddB").disabled = true; A.scanBeacons(); };
+window.onBeacons = (json, done) => {
+  const daCo = new Set(keyOrder.map(id => keys[id].mac));
+  let a = JSON.parse(json).filter(o => !o.ten.startsWith("KhoaXe") && !daCo.has(o.mac));
+  a.sort((x,y) => y.rssi - x.rssi);
+  a = a.slice(0, 8);
+  $("blist").innerHTML = a.map(o => {
+    const goiY = /holy|beacon|itag|tag|nrf/i.test(o.ten) ? " ⭐" : "";
+    return `<div class="item" data-mac="${o.mac}" data-ten="${esc(o.ten)}"><div class="t"><b>${esc(o.ten || "Không tên")}${goiY}</b><small>${o.mac}</small></div><span class="mut" style="white-space:nowrap">${o.rssi} dBm</span></div>`;
+  }).join("");
+  if (done){
+    $("btnAddB").disabled = !(connected && allowed);
+    setMsg("scanMsg", a.length ? "Bấm vào beacon của bạn (thường ở trên cùng, có ⭐)" : "Không thấy beacon nào. Lắc beacon rồi bấm Thêm beacon lại.", "mut");
+  }
+};
+$("blist").onclick = e => {
+  const it = e.target.closest(".item"); if (!it) return;
+  const ten = khongDau(it.dataset.ten || "Beacon").slice(0, 20) || "Beacon";
+  send("themb " + it.dataset.mac + " " + ten);
+};
+$("btnAddP").onclick = () => { $("phoneGuide").hidden = !$("phoneGuide").hidden; };
+
+// ---------- chinh khoang cach ----------
+function fillMeasKeys(){
+  const S = $("measKey"), cur = S.value;
+  S.innerHTML = keyOrder.map(id => `<option value="${id}">${icon(keys[id])} ${esc(keys[id].ten)}</option>`).join("");
+  if (cur && keys[cur]) S.value = cur;
+  loadMeasKey();
+}
+function loadMeasKey(){
+  const k = keys[$("measKey").value];
+  meas = { near:null, far:null, farLost:false };
+  $("vNear").textContent = "—"; $("vFar").textContent = "—"; setMsg("msgMeas", "");
+  if (k){ $("inMo").value = k.mo; $("inKh").value = k.kh; }
+  updateMeasNow();
+}
+$("measKey").onchange = loadMeasKey;
+function updateMeasNow(){
+  const l = live[$("measKey").value];
+  $("measNow").textContent = !l ? "—" : (l.rssi === null ? "Không thấy" : l.rssi + " dBm");
+}
+$("btnNear").onclick = () => {
+  const l = live[$("measKey").value];
+  if (!l || l.rssi === null){ setMsg("msgMeas", "Mạch chưa nghe thấy chìa này. Lắc beacon / bật Bluetooth điện thoại rồi đo lại.", "bad"); return; }
+  meas.near = l.rssi; $("vNear").textContent = l.rssi + " dBm"; calc();
+};
+$("btnFar").onclick = () => {
+  const l = live[$("measKey").value];
+  meas.farLost = !l || l.rssi === null; meas.far = meas.farLost ? null : l.rssi;
+  $("vFar").textContent = meas.farLost ? "Mất sóng" : l.rssi + " dBm"; calc();
+};
+function calc(){
+  if (meas.near === null || (meas.far === null && !meas.farLost)) return;
+  let mo = meas.near - 3;
+  let kh = meas.farLost ? mo - 12 : Math.min(meas.far + 2, mo - 8);
+  if (!meas.farLost && meas.far >= meas.near - 5){ setMsg("msgMeas", "Hai chỗ đo gần nhau quá. Đi ra xa hơn rồi đo lại chỗ khóa.", "bad"); return; }
+  mo = Math.min(mo, -30); kh = Math.max(kh, -105);
+  $("inMo").value = mo; $("inKh").value = kh;
+  setMsg("msgMeas", `Đề xuất: mở khi sóng ≥ ${mo}, khóa khi sóng < ${kh}. Bấm Lưu khoảng cách.`, "");
+}
+$("btnSaveMeas").onclick = () => {
+  const id = $("measKey").value, mo = +$("inMo").value, kh = +$("inKh").value;
+  if (!id){ setMsg("msgMeas", "Chưa có chìa nào để chỉnh.", "bad"); return; }
+  if (kh > mo - 5){ setMsg("msgMeas", "Ngưỡng KHÓA phải âm hơn ngưỡng MỞ ít nhất 5.", "bad"); return; }
+  send(`nguong ${id} ${mo} ${kh}`);
+};
+
+// ---------- thoi gian, nang cao ----------
+function saveFields(list, msgId){
+  let n = 0;
+  for (const k of list){
+    const v = String($(k).value).trim();
+    if (v !== "" && v !== String(cfg[k])){ send(k + " " + v); cfg[k] = v; n++; }
+  }
+  setMsg(msgId, n ? "✓ Đã lưu " + n + " thay đổi" : "Không có gì thay đổi", "ok");
+}
+$("btnSaveTime").onclick = () => saveFields(["cho","xn","kich"], "msgTime");
+$("btnSaveAdv").onclick = () => saveFields(["thap","den","acc","ngu","phut"], "msgAdv");
 $("btnTM").onclick = () => send("thu mo");
 $("btnTK").onclick = () => send("thu khoa");
-$("btnExit").onclick = async () => { await send("thoat"); };
+$("btnExit").onclick = () => send("thoat");
 
-setConnected(false);
-// Số mẫu cho đến khi kết nối
-fill("mo",-70); fill("khoa",-82); markers();
+render();
 </script>
 </body>
 </html>
