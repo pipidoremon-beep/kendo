@@ -62,6 +62,7 @@ public class MainActivity extends Activity {
     final Handler h = new Handler(Looper.getMainLooper());
     WebView web;
     BluetoothAdapter adapter;
+    BluetoothManager bm;
     BluetoothLeScanner scanner;
     BluetoothGatt gatt;
     BluetoothGattCharacteristic rxChar;
@@ -102,7 +103,7 @@ public class MainActivity extends Activity {
         setContentView(web);
         web.loadUrl("file:///android_asset/index.html");
 
-        BluetoothManager bm = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+        bm = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         adapter = bm != null ? bm.getAdapter() : null;
     }
 
@@ -180,8 +181,36 @@ public class MainActivity extends Activity {
             scanner.startScan(null, st, quetCB);
             dangQuet = true;
             if (!daKetNoi && gatt == null) trangThai("scanning", "");
+            // Dien thoai da ghep doi va dang noi san voi mach -> mach co the khong phat song tim kiem.
+            // Sau 4 giay khong thay thi ket noi thang vao mach da ghep doi.
+            h.removeCallbacks(thuKetNoiTrucTiep);
+            h.postDelayed(thuKetNoiTrucTiep, 4000);
         } catch (Exception e) { log("Loi quet: " + e.getMessage()); }
     }
+
+    final Runnable thuKetNoiTrucTiep = new Runnable() {
+        @Override public void run() {
+            if (!tuKetNoi || daKetNoi || gatt != null || cheDoTimBeacon || adapter == null || !adapter.isEnabled()) return;
+            String macDaLuu = prefs.getString("mac_mach", "");
+            BluetoothDevice chon = null;
+            try {
+                if (bm != null) for (BluetoothDevice d : bm.getConnectedDevices(BluetoothProfile.GATT)) {
+                    String n = d.getName();
+                    if ((n != null && n.startsWith(TIEN_TO_TEN)) || d.getAddress().equals(macDaLuu)) { chon = d; break; }
+                }
+                if (chon == null) for (BluetoothDevice d : adapter.getBondedDevices()) {
+                    String n = d.getName();
+                    if ((n != null && n.startsWith(TIEN_TO_TEN)) || d.getAddress().equals(macDaLuu)) { chon = d; break; }
+                }
+            } catch (Exception e) { log("Loi tim mach da ghep: " + e.getMessage()); }
+            if (chon != null) {
+                log("Ket noi thang vao mach da ghep doi " + chon.getAddress());
+                dungQuet();
+                String n = chon.getName();
+                ketNoi(chon, n != null ? n : "KhoaXe");
+            }
+        }
+    };
 
     void dungQuet() {
         if (!dangQuet) return;
