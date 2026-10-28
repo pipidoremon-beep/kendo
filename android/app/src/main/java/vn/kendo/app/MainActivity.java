@@ -80,6 +80,8 @@ public class MainActivity extends Activity {
     final LinkedList<byte[]> hangGui = new LinkedList<>();
     boolean dangGhi = false;
     final Map<String, JSONObject> dsBeacon = new HashMap<>();
+    boolean cheDoTimMach = false;        // dang liet ke cac mach KhoaXe de chon
+    final Map<String, JSONObject> dsMach = new HashMap<>();
 
     // ======================= VONG DOI =======================
     @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
@@ -190,17 +192,18 @@ public class MainActivity extends Activity {
 
     final Runnable thuKetNoiTrucTiep = new Runnable() {
         @Override public void run() {
-            if (!tuKetNoi || daKetNoi || gatt != null || cheDoTimBeacon || adapter == null || !adapter.isEnabled()) return;
+            if (!tuKetNoi || daKetNoi || gatt != null || cheDoTimBeacon || cheDoTimMach || adapter == null || !adapter.isEnabled()) return;
             String macDaLuu = prefs.getString("mac_mach", "");
             BluetoothDevice chon = null;
             try {
+                // Da chon mach -> CHI ket noi dung mach do (nha co 2 xe khong bi vao nham)
                 if (bm != null) for (BluetoothDevice d : bm.getConnectedDevices(BluetoothProfile.GATT)) {
                     String n = d.getName();
-                    if ((n != null && n.startsWith(TIEN_TO_TEN)) || d.getAddress().equals(macDaLuu)) { chon = d; break; }
+                    if (macDaLuu.isEmpty() ? (n != null && n.startsWith(TIEN_TO_TEN)) : d.getAddress().equalsIgnoreCase(macDaLuu)) { chon = d; break; }
                 }
                 if (chon == null) for (BluetoothDevice d : adapter.getBondedDevices()) {
                     String n = d.getName();
-                    if ((n != null && n.startsWith(TIEN_TO_TEN)) || d.getAddress().equals(macDaLuu)) { chon = d; break; }
+                    if (macDaLuu.isEmpty() ? (n != null && n.startsWith(TIEN_TO_TEN)) : d.getAddress().equalsIgnoreCase(macDaLuu)) { chon = d; break; }
                 }
             } catch (Exception e) { log("Loi tim mach da ghep: " + e.getMessage()); }
             if (chon != null) {
@@ -236,7 +239,23 @@ public class MainActivity extends Activity {
             return;
         }
 
-        if (tuKetNoi && !daKetNoi && gatt == null && ten.startsWith(TIEN_TO_TEN)) {
+        if (cheDoTimMach) {
+            if (!ten.startsWith(TIEN_TO_TEN)) return;
+            try {
+                synchronized (dsMach) {
+                    JSONObject o = dsMach.get(mac);
+                    if (o == null) { o = new JSONObject(); o.put("mac", mac); o.put("ghep", false); }
+                    o.put("ten", ten);
+                    o.put("rssi", r.getRssi());
+                    dsMach.put(mac, o);
+                }
+            } catch (Exception ignored) {}
+            return;
+        }
+
+        String macDaLuu = prefs.getString("mac_mach", "");
+        if (tuKetNoi && !daKetNoi && gatt == null && ten.startsWith(TIEN_TO_TEN)
+                && (macDaLuu.isEmpty() || macDaLuu.equalsIgnoreCase(mac))) {
             dungQuet();
             ketNoi(d, ten);
         }
@@ -258,6 +277,7 @@ public class MainActivity extends Activity {
             } else if (state == BluetoothProfile.STATE_DISCONNECTED) {
                 g.close();
                 h.post(() -> {
+                    if (gatt != null && gatt != g) return;   // ket noi cu (truoc khi doi mach)
                     boolean truocDo = daKetNoi;
                     gatt = null; rxChar = null; daKetNoi = false;
                     synchronized (hangGui) { hangGui.clear(); dangGhi = false; }
@@ -368,12 +388,70 @@ public class MainActivity extends Activity {
         }
     }
 
+    // ======================= CHON MACH (nha co nhieu xe) =======================
+    void timMach() {
+        if (adapter == null || !adapter.isEnabled()) { js("onBoards('[]',true)"); return; }
+        String macDaLuu = prefs.getString("mac_mach", "");
+        synchronized (dsMach) {
+            dsMach.clear();
+            try {
+                // mach da ghep doi (co the dang noi san nen khong thay khi quet)
+                for (BluetoothDevice d : adapter.getBondedDevices()) {
+                    String n = d.getName();
+                    if (n == null || !n.startsWith(TIEN_TO_TEN)) continue;
+                    JSONObject o = new JSONObject();
+                    o.put("mac", d.getAddress()); o.put("ten", n); o.put("rssi", JSONObject.NULL); o.put("ghep", true);
+                    dsMach.put(d.getAddress(), o);
+                }
+            } catch (Exception e) { log("Loi doc mach da ghep: " + e.getMessage()); }
+        }
+        cheDoTimMach = true;
+        dungQuet();
+        batQuet();
+        for (int i = 1; i <= 5; i++) {
+            final int lan = i;
+            h.postDelayed(() -> {
+                JSONArray a = new JSONArray();
+                String cur = prefs.getString("mac_mach", "");
+                synchronized (dsMach) {
+                    for (JSONObject o : dsMach.values()) {
+                        try { o.put("cur", o.getString("mac").equalsIgnoreCase(cur) && daKetNoi); } catch (Exception ignored) {}
+                        a.put(o);
+                    }
+                }
+                js("onBoards(" + JSONObject.quote(a.toString()) + "," + (lan == 5) + ")");
+                if (lan == 5) {
+                    dungQuet(); cheDoTimMach = false;
+                    if (!daKetNoi && gatt == null) batDau();
+                }
+            }, i * 1000L);
+        }
+    }
+
+    void chonMach(String mac) {
+        cheDoTimMach = false;
+        dungQuet();
+        prefs.edit().putString("mac_mach", mac).apply();
+        tuKetNoi = true;
+        if (gatt != null) {
+            if (daKetNoi && gatt.getDevice().getAddress().equalsIgnoreCase(mac)) { trangThai("connected", tenMach); return; }
+            BluetoothGatt cu = gatt;
+            gatt = null; rxChar = null; daKetNoi = false;
+            synchronized (hangGui) { hangGui.clear(); dangGhi = false; }
+            try { cu.disconnect(); cu.close(); } catch (Exception ignored) {}
+            trangThai("disconnected", "");
+        }
+        h.postDelayed(() -> batDau(), 800);
+    }
+
     // ======================= CAU NOI VOI GIAO DIEN =======================
     class Cau {
         @JavascriptInterface public void send(String lenh) { h.post(() -> gui(lenh)); }
         @JavascriptInterface public void scanBeacons() { h.post(() -> timBeacon()); }
         @JavascriptInterface public void retry() { h.post(() -> { tuKetNoi = true; dungQuet(); batDau(); }); }
         @JavascriptInterface public void setAuto(boolean b) { h.post(() -> { tuKetNoi = b; if (!b) dungQuet(); }); }
+        @JavascriptInterface public void listBoards() { h.post(() -> timMach()); }
+        @JavascriptInterface public void chooseBoard(String mac) { h.post(() -> chonMach(mac)); }
         @JavascriptInterface public void disconnect() { h.post(() -> { if (gatt != null) gatt.disconnect(); }); }
     }
 

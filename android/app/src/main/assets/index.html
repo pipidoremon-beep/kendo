@@ -107,7 +107,8 @@ input.txt{width:100%;text-align:left;font-family:system-ui,sans-serif}
   <div class="card">
     <div class="conn">
       <span class="dot busy" id="dot"></span>
-      <div style="min-width:0"><b id="connTitle">Đang khởi động…</b><small id="connSub"></small></div>
+      <div style="min-width:0;flex:1"><b id="connTitle">Đang khởi động…</b><small id="connSub"></small></div>
+      <button class="sm ghost" id="btnDoiXe" style="flex:none">🔁 Đổi xe</button>
     </div>
     <div class="st">
       <div class="box"><small>Xe</small><b id="xe" class="mut">—</b></div>
@@ -116,6 +117,14 @@ input.txt{width:100%;text-align:left;font-family:system-ui,sans-serif}
     <div class="rs"><small id="rsLabel">Sóng mạnh nhất</small><b id="rssi">—</b></div>
     <div class="meter"><i id="fill"></i><span class="mk mo" id="mkMo" hidden></span><span class="mk kh" id="mkKh" hidden></span></div>
     <div class="acc" id="accBox" hidden>🚗 Xe đang bật (ACC): tạm không tự khóa</div>
+  </div>
+
+  <!-- CHON MACH (nha co nhieu xe) -->
+  <div class="card" id="boardBox" hidden>
+    <h3>Chọn xe (mạch)</h3>
+    <div class="msg" id="boardMsg"></div>
+    <div class="list" id="boardList"></div>
+    <div style="margin-top:10px;display:flex;gap:8px"><button class="sm" id="btnBoardScan">Tìm lại</button><button class="sm ghost" id="btnBoardClose">Đóng</button></div>
   </div>
 
   <div class="notice" id="notice" hidden>
@@ -247,6 +256,10 @@ const khongDau = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g,"
 let cfg = {}, keys = {}, keyOrder = [], live = {}, newKeys = {};
 let connected = false, allowed = false, cd = false, xeMo = null, accOn = false;
 let meas = { near:null, far:null, farLost:false };
+let curName = "", boards = [];
+// Ten goi nho cho tung mach (luu tren dien thoai): "Xe nha", "Xe anh Tuan"...
+const nick = t => { try { return localStorage.getItem("nick:" + t) || ""; } catch(e){ return ""; } };
+const setNick = (t, v) => { try { v ? localStorage.setItem("nick:" + t, v) : localStorage.removeItem("nick:" + t); } catch(e){} };
 
 function log(s){ const l=$("log"); l.textContent += s + "\n"; if (l.textContent.length > 9000) l.textContent = l.textContent.slice(-7000); l.scrollTop = l.scrollHeight; }
 function send(c){ A.send(c); log("> " + c); }
@@ -268,6 +281,8 @@ window.onState = (st, name) => {
   $("connTitle").textContent = T[1];
   $("connSub").textContent = T[2] || "";
   connected = st === "connected";
+  if (name) curName = name;
+  if (st === "connecting"){ keys = {}; keyOrder = []; cfg = {}; renderKeyEdit(); }
   if (!connected){ allowed = false; live = {}; }
   if (st === "connected") $("notice").hidden = true;
   render();
@@ -341,7 +356,7 @@ function render(){
 
   // ten mach + che do cai dat
   if (connected && cfg.ten){
-    $("connSub").innerHTML = esc(cfg.ten) + (cd ? '<span class="badge cd">Chế độ cài đặt</span>' : "");
+    $("connSub").innerHTML = (nick(cfg.ten) ? "<b style='display:inline;font-size:14px'>" + esc(nick(cfg.ten)) + "</b> · " : "") + esc(cfg.ten) + (cd ? '<span class="badge cd">Chế độ cài đặt</span>' : "");
     $("tenMach2").textContent = cfg.ten;
   }
   $("sumExit").textContent = cd ? "Mạch đang ở chế độ cài đặt, đèn nháy nhanh" : "Mạch đang chạy bình thường";
@@ -446,6 +461,50 @@ $("blist").onclick = e => {
   send("themb " + it.dataset.mac + " " + ten);
 };
 $("btnAddP").onclick = () => { $("phoneGuide").hidden = !$("phoneGuide").hidden; };
+
+// ---------- chon xe (mach) ----------
+function moChonXe(){
+  if (!A.listBoards){   // ban web: trinh duyet tu hien danh sach de chon
+    A.disconnect(); A.retry(); return;
+  }
+  $("boardBox").hidden = false; boards = []; renderBoards();
+  setMsg("boardMsg", "Đang tìm các mạch ở gần… (5 giây)", "");
+  A.listBoards();
+}
+$("btnDoiXe").onclick = moChonXe;
+$("btnBoardScan").onclick = moChonXe;
+$("btnBoardClose").onclick = () => { $("boardBox").hidden = true; };
+window.onBoards = (json, done) => {
+  boards = JSON.parse(json);
+  boards.sort((x, y) => (y.cur - x.cur) || ((y.rssi ?? -200) - (x.rssi ?? -200)));
+  renderBoards();
+  if (done) setMsg("boardMsg", boards.length ? "Bấm Dùng để chuyển sang xe đó." : "Không thấy mạch nào. Lại gần xe rồi bấm Tìm lại.", boards.length ? "" : "bad");
+};
+function renderBoards(){
+  $("boardList").innerHTML = boards.map(b => {
+    const nk = nick(b.ten);
+    const song = b.rssi === null || b.rssi === undefined ? (b.ghep ? "Đã ghép · không thấy sóng" : "—") : "Sóng " + songTxt(b.rssi);
+    const nut = b.cur ? '<span class="pill near">Đang dùng</span>' : `<button class="sm" data-act="use" data-mac="${esc(b.mac)}">Dùng</button>`;
+    return `<div class="item"><div class="t"><b>🚗 ${esc(nk || b.ten)}</b><small>${nk ? esc(b.ten) + " · " : ""}${song}</small></div>
+      <div class="acts">${nut}<button class="sm ghost" data-act="nick" data-ten="${esc(b.ten)}">Đặt tên</button></div></div>
+      <div class="renrow" data-nickrow="${esc(b.ten)}" hidden><input class="txt" maxlength="24" placeholder="VD: Xe nhà, Xe anh Tuấn" value="${esc(nk)}"><button class="sm" data-act="nickOk" data-ten="${esc(b.ten)}">Lưu</button></div>`;
+  }).join("");
+}
+$("boardList").onclick = e => {
+  const b = e.target.closest("button"); if (!b) return;
+  const act = b.dataset.act;
+  if (act === "use"){
+    $("boardBox").hidden = true;
+    A.chooseBoard(b.dataset.mac);
+  } else if (act === "nick"){
+    const row = [...document.querySelectorAll("[data-nickrow]")].find(r => r.dataset.nickrow === b.dataset.ten);
+    if (row){ row.hidden = !row.hidden; if (!row.hidden) row.querySelector("input").focus(); }
+  } else if (act === "nickOk"){
+    const row = b.closest(".renrow");
+    setNick(b.dataset.ten, row.querySelector("input").value.trim());
+    renderBoards(); render();
+  }
+};
 
 // ---------- chinh khoang cach ----------
 function fillMeasKeys(){
