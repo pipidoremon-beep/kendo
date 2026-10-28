@@ -79,6 +79,8 @@ details[open] summary::after{transform:rotate(90deg)}
 .guide{background:var(--soft);border-radius:12px;padding:10px 12px;font-size:14px}
 .guide ol{margin:6px 0 0;padding-left:20px}
 .row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px}
+.renrow{display:flex;gap:8px;align-items:center;margin:-2px 0 6px}
+.renrow input{flex:1;min-width:0}
 .row label small{display:block;color:var(--muted);font-size:12px}
 input,select{font:500 16px ui-monospace,monospace;width:110px;padding:8px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--fg);text-align:right}
 select{width:auto;max-width:200px;text-align:left;font-family:system-ui,sans-serif}
@@ -341,7 +343,7 @@ window.onLine = s => {
     newKeys[m[1]] = { id:m[1], type:m[1][0], mac:m[2], mo:+m[3], kh:+m[4], ten:m[5] || (m[1][0]==="b" ? "Beacon" : "Điện thoại") };
     return;
   }
-  if (s === "END"){ keys = newKeys; keyOrder = Object.keys(keys); fillMeasKeys(); render(); return; }
+  if (s === "END"){ keys = newKeys; keyOrder = Object.keys(keys); fillMeasKeys(); renderKeyEdit(); render(); return; }
   if (s.startsWith("ST ")){
     const p = s.split(" ");
     xeMo = p[1] === "1"; accOn = p[2] === "1";
@@ -425,14 +427,17 @@ function render(){
     }).join("");
   }
 
-  // danh sach sua chia
+}
+
+// Danh sach sua chia: CHI ve lai khi danh sach chia thay doi (khong ve lai moi giay)
+function renderKeyEdit(){
   const E = $("keyEdit");
   $("sumKeys").textContent = keyOrder.length ? "Đang có " + keyOrder.length + " chìa" : "Beacon, điện thoại";
   E.innerHTML = keyOrder.map(id => {
     const k = keys[id];
     return `<div class="item" data-id="${id}"><div class="t"><b>${icon(k)} ${esc(k.ten)}</b><small>${esc(k.mac)} · mở ${k.mo} / khóa ${k.kh}</small></div>
       <div class="acts"><button class="sm ghost" data-act="ren">Đổi tên</button><button class="sm danger" data-act="del">Xóa</button></div></div>
-      <div class="row" id="ren-${id}" hidden><input class="txt" maxlength="20" placeholder="Tên mới" id="renIn-${id}"><button class="sm" data-act="renOk" data-id="${id}">Lưu</button></div>`;
+      <div class="renrow" id="ren-${id}" hidden><input class="txt" maxlength="20" placeholder="Tên mới" id="renIn-${id}"><button class="sm" data-act="renOk" data-id="${id}">Lưu</button><button class="sm ghost" data-act="renNo" data-id="${id}">Hủy</button></div>`;
   }).join("");
 }
 
@@ -440,9 +445,10 @@ $("keyEdit").onclick = e => {
   const b = e.target.closest("button"); if (!b) return;
   const it = b.closest(".item"); const id = b.dataset.id || (it ? it.dataset.id : "");
   if (b.dataset.act === "ren"){ $("ren-" + id).hidden = false; $("renIn-" + id).value = keys[id].ten; $("renIn-" + id).focus(); }
+  if (b.dataset.act === "renNo"){ $("ren-" + id).hidden = true; }
   if (b.dataset.act === "renOk"){
     const t = khongDau($("renIn-" + id).value).slice(0, 20);
-    if (t) send("ten " + id + " " + t);
+    if (t){ send("ten " + id + " " + t); $("ren-" + id).hidden = true; setMsg("msgKeys", "Đang lưu tên…", ""); }
   }
   if (b.dataset.act === "del"){
     if (b.dataset.sure){ send("xoa " + id); }
@@ -543,6 +549,7 @@ $("btnTM").onclick = () => send("thu mo");
 $("btnTK").onclick = () => send("thu khoa");
 $("btnExit").onclick = () => send("thoat");
 
+renderKeyEdit();
 render();
 </script>
 </body>
