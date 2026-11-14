@@ -89,7 +89,19 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle b) {
         super.onCreate(b);
         prefs = getSharedPreferences("kendo", MODE_PRIVATE);
-        getWindow().setStatusBarColor(Color.parseColor("#0A6CDB"));
+        // Tran vien: ve app ra ca sau thanh trang thai va thanh dieu huong
+        android.view.Window w = getWindow();
+        w.setStatusBarColor(Color.TRANSPARENT);
+        w.setNavigationBarColor(Color.TRANSPARENT);
+        if (Build.VERSION.SDK_INT >= 29) { w.setNavigationBarContrastEnforced(false); w.setStatusBarContrastEnforced(false); }
+        if (Build.VERSION.SDK_INT >= 28) {
+            android.view.WindowManager.LayoutParams lp = w.getAttributes();
+            lp.layoutInDisplayCutoutMode = android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+            w.setAttributes(lp);
+        }
+        w.getDecorView().setSystemUiVisibility(android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
 
         web = new WebView(this);
         WebSettings s = web.getSettings();
@@ -99,8 +111,21 @@ public class MainActivity extends Activity {
         web.setWebViewClient(new WebViewClient() {
             @Override public void onPageFinished(WebView v, String url) {
                 webSanSang = true;
+                guiLe();
                 batDau();
             }
+        });
+        web.setBackgroundColor(Color.parseColor("#0E1526"));
+        web.setOnApplyWindowInsetsListener((v, ins) -> {
+            float d = getResources().getDisplayMetrics().density;
+            leTren = Math.round(ins.getSystemWindowInsetTop() / d);
+            leDuoi = Math.round(ins.getSystemWindowInsetBottom() / d);
+            if (Build.VERSION.SDK_INT >= 31) {   // lay dung do bo goc that cua man hinh
+                android.view.RoundedCorner rc = ins.getRoundedCorner(android.view.RoundedCorner.POSITION_TOP_LEFT);
+                if (rc != null && rc.getRadius() > 0) boGoc = Math.round(rc.getRadius() / d);
+            }
+            guiLe();
+            return ins;
         });
         setContentView(web);
         web.loadUrl("file:///android_asset/index.html");
@@ -120,6 +145,24 @@ public class MainActivity extends Activity {
         dangDung = false;
         dungQuet();
     }
+
+    // Bao cho trang web biet chieu cao thanh trang thai / thanh dieu huong (don vi px CSS)
+    int leTren = 0, leDuoi = 0, boGoc = 0;
+    void guiLe() {
+        if (web == null || !webSanSang) return;
+        web.evaluateJavascript("document.documentElement.style.setProperty('--le-tren','" + leTren + "px');"
+                + "document.documentElement.style.setProperty('--le-duoi','" + leDuoi + "px');"
+                + (boGoc > 0 ? "document.documentElement.style.setProperty('--bo','" + boGoc + "px');" : ""), null);
+    }
+
+    // Nut Back cua dien thoai: dang o trang Cai dat thi quay ve Trang chu, con lai thi thoat app
+    @Override public void onBackPressed() {
+        if (web != null && webSanSang) {
+            web.evaluateJavascript("(window.goBackFromNative && window.goBackFromNative()) ? 'y' : 'n'",
+                    v -> { if (v == null || !v.contains("y")) thoatApp(); });
+        } else thoatApp();
+    }
+    void thoatApp() { super.onBackPressed(); }
 
     @Override protected void onDestroy() {
         super.onDestroy();
