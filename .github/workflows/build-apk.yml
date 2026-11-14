@@ -13,6 +13,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Chep giao dien vao app
+        run: |
+          cp index.html android/app/src/main/assets/index.html
+          if [ -f xe.webp ]; then cp xe.webp android/app/src/main/assets/xe.webp; fi
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
