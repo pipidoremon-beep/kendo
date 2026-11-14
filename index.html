@@ -138,6 +138,12 @@ body.home .acc{background:rgba(255,255,255,.07);color:#cfe0ff}
 #vHome .stt{font-size:24px;margin-top:-4px}
 #vHome:has(.hero.mo) .rbtn.g,#vHome:has(.hero.kh) .rbtn.r{background:radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--bc) 55%,#0c1322),color-mix(in srgb,var(--bc) 22%,#0c1322));color:#fff;box-shadow:0 0 30px color-mix(in srgb,var(--bc) 80%,transparent),inset 0 0 18px color-mix(in srgb,var(--bc) 50%,transparent)}
 #vHome:has(.hero.mo) .rbtn.r,#vHome:has(.hero.kh) .rbtn.g{opacity:.45;box-shadow:none}
+/* Vien neon quanh man hinh: do khi khoa, xanh khi mo */
+body.home::before{content:"";position:fixed;inset:2px;border-radius:40px;pointer-events:none;z-index:50;border:2.5px solid transparent}
+body.home:has(.hero.kh)::before{--n:#ff2d48}
+body.home:has(.hero.mo)::before{--n:#21f08f}
+body.home:has(.hero.kh)::before,body.home:has(.hero.mo)::before{border-color:var(--n);box-shadow:0 0 6px var(--n),0 0 18px var(--n),inset 0 0 6px var(--n),inset 0 0 18px color-mix(in srgb,var(--n) 60%,transparent);animation:neon 2.6s ease-in-out infinite}
+@keyframes neon{50%{opacity:.6}}
 #vHome .chips .chip{padding:9px 16px;font-size:15px}
 #vHome .stage{margin:18px 0 10px}
 
