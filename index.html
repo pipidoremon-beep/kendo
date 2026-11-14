@@ -139,11 +139,18 @@ body.home .acc{background:rgba(255,255,255,.07);color:#cfe0ff}
 #vHome:has(.hero.mo) .rbtn.g,#vHome:has(.hero.kh) .rbtn.r{background:radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--bc) 55%,#0c1322),color-mix(in srgb,var(--bc) 22%,#0c1322));color:#fff;box-shadow:0 0 30px color-mix(in srgb,var(--bc) 80%,transparent),inset 0 0 18px color-mix(in srgb,var(--bc) 50%,transparent)}
 #vHome:has(.hero.mo) .rbtn.r,#vHome:has(.hero.kh) .rbtn.g{opacity:.45;box-shadow:none}
 /* Vien neon quanh man hinh: do khi khoa, xanh khi mo */
-body.home::before{content:"";position:fixed;inset:2px;border-radius:40px;pointer-events:none;z-index:50;border:2.5px solid transparent}
+body.home::before{content:"";position:fixed;inset:0;border-radius:var(--bo,46px);pointer-events:none;z-index:50}
 body.home:has(.hero.kh)::before{--n:#ff2d48}
 body.home:has(.hero.mo)::before{--n:#21f08f}
-body.home:has(.hero.kh)::before,body.home:has(.hero.mo)::before{border-color:var(--n);box-shadow:0 0 6px var(--n),0 0 18px var(--n),inset 0 0 6px var(--n),inset 0 0 18px color-mix(in srgb,var(--n) 60%,transparent);animation:neon 2.6s ease-in-out infinite}
-@keyframes neon{50%{opacity:.6}}
+/* dam sat mep man hinh, mo dan vao trong */
+body.home:has(.hero.kh)::before,body.home:has(.hero.mo)::before{border:3px solid var(--n);
+  box-shadow:inset 0 0 5px var(--n),inset 0 0 13px var(--n),inset 0 0 26px color-mix(in srgb,var(--n) 55%,transparent),inset 0 0 42px color-mix(in srgb,var(--n) 22%,transparent);
+  animation:neon 2.6s ease-in-out infinite}
+@keyframes neon{50%{opacity:.65}}
+/* Tran vien: chua cho thanh trang thai (tren) va thanh dieu huong (duoi) */
+body{padding-top:var(--le-tren,0px);padding-bottom:var(--le-duoi,0px)}
+header.bar{top:var(--le-tren,0px)}
+body:not(.home)::after{content:"";position:fixed;top:0;left:0;right:0;height:var(--le-tren,0px);background:#0a6cdb;z-index:6}
 #vHome .chips .chip{padding:9px 16px;font-size:15px}
 #vHome .stage{margin:18px 0 10px}
 
