@@ -94,29 +94,108 @@ input.txt{width:100%;text-align:left;font-family:system-ui,sans-serif}
 .meas{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .meas .box b{font-size:17px}
 #log{font:12px/1.5 ui-monospace,monospace;color:var(--muted);max-height:220px;overflow:auto;white-space:pre-wrap;word-break:break-word;margin:0}
+/* ===== Giao dien 2 trang: Trang chu (xe) + Cai dat (nut ⋮) ===== */
+header.bar{display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:5}
+header.bar .ttl{flex:1;min-width:0}
+header.bar .ttl h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header.bar .ttl p{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ib{width:44px;height:44px;padding:0;border-radius:50%;background:rgba(255,255,255,.16);color:#fff;font-size:24px;line-height:44px;flex:none}
+/* Trang chu toi, phat sang (luon toi, khong theo che do sang/toi) */
+body.home{background:radial-gradient(120% 70% at 50% 30%,#1d2c4f 0%,#0e1526 55%,#070b14 100%) fixed;color:#e9f1ff}
+body.home header.bar{background:transparent}
+body.home .ib{background:rgba(255,255,255,.08);border:1px solid rgba(160,200,255,.18)}
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center;padding:4px 6px 0;--c:#8a96ab}
+.hero.mo{--c:#2fe08a} .hero.kh{--c:#ff4d5e}
+.chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.chip{display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:99px;background:rgba(255,255,255,.06);border:1px solid rgba(160,200,255,.16);font-size:13px}
+.chip b{font-weight:600} .chip small{color:#9fb0c8}
+.stage{position:relative;width:100%;display:flex;justify-content:center;align-items:center;margin:14px 0 6px;min-height:200px}
+.halo{position:absolute;top:50%;left:50%;width:340px;height:240px;transform:translate(-50%,-50%);border-radius:50%;
+  background:radial-gradient(ellipse,color-mix(in srgb,var(--c) 34%,transparent) 0%,transparent 66%);animation:pulse 3s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.55;transform:translate(-50%,-50%) scale(.93)}}
+.floor{position:absolute;left:50%;bottom:4%;width:78%;height:34px;transform:translateX(-50%);border-radius:50%;
+  background:radial-gradient(ellipse,rgba(0,0,0,.75) 0%,color-mix(in srgb,var(--c) 30%,transparent) 45%,transparent 72%);filter:blur(4px)}
+.car{position:relative;width:94%;max-width:400px;height:auto;user-select:none;-webkit-user-drag:none;filter:drop-shadow(0 10px 16px rgba(0,0,0,.55))}
+.lockbadge{position:absolute;top:2%;right:4%;width:46px;height:46px;color:var(--c);filter:drop-shadow(0 0 8px var(--c))}
+.hero .stt{font-size:30px;font-weight:800;letter-spacing:.06em;color:var(--c);text-shadow:0 0 18px color-mix(in srgb,var(--c) 70%,transparent)}
+.hero .sub{color:#9fb0c8;font-size:14px;margin-top:2px}
+.bars{display:flex;align-items:flex-end;gap:2px;height:14px}
+.bars i{width:4px;border-radius:1px;background:rgba(255,255,255,.18)}
+.bars i:nth-child(1){height:25%}.bars i:nth-child(2){height:50%}.bars i:nth-child(3){height:75%}.bars i:nth-child(4){height:100%}
+.bars i.on{background:#5cc8ff;box-shadow:0 0 6px #5cc8ff}
+.rbtns{display:flex;justify-content:center;gap:44px;padding:14px 0 24px}
+.rbtn{width:104px;height:104px;border-radius:50%;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  background:radial-gradient(circle at 50% 35%,#1d2a44,#0c1322);color:var(--bc);border:2px solid var(--bc);
+  box-shadow:0 0 18px color-mix(in srgb,var(--bc) 55%,transparent),inset 0 0 14px color-mix(in srgb,var(--bc) 30%,transparent);transition:transform .1s}
+.rbtn svg{width:40px;height:40px} .rbtn span{font-size:13px;font-weight:800;letter-spacing:.05em}
+.rbtn.g{--bc:#2fe08a} .rbtn.r{--bc:#ff4d5e}
+.rbtn:active{transform:scale(.94)} .rbtn:disabled{opacity:.35;box-shadow:none}
+body.home .notice{background:rgba(251,191,36,.12);color:#ffe2a0;border:1px solid rgba(251,191,36,.3)}
+body.home .acc{background:rgba(255,255,255,.07);color:#cfe0ff}
+#vHome,#vSet{display:flex;flex-direction:column;gap:12px}
+/* Trang chu gon: chi xe + song + 2 nut */
+#vHome .chips .chip:first-child,#vHome .lockbadge,#vHome .stt,#vHome .sub,#vHome #accBox{display:none!important}
+#vHome .chips .chip{padding:9px 16px;font-size:15px}
+#vHome .stage{margin:18px 0 10px}
+
 </style>
 </head>
-<body>
-<header>
-  <h1>Kendo</h1>
-  <p>Khóa xe thông minh</p>
+<body class="home">
+<!-- ================= TRANG CHU ================= -->
+<header class="bar" id="barHome">
+  <div class="ttl"><h1>Kendo</h1><p id="hdrXe">Khóa xe thông minh</p></div>
+  <button class="ib" id="btnMenu" aria-label="Cài đặt">⋮</button>
+</header>
+<header class="bar" id="barSet" hidden>
+  <button class="ib" id="btnBack" aria-label="Quay lại">‹</button>
+  <div class="ttl"><h1>Cài đặt</h1><p>Chìa khóa · khoảng cách · thời gian</p></div>
 </header>
 <main>
+<section id="vHome">
+  <div class="hero unk" id="hero">
+    <div class="chips">
+      <span class="chip"><span class="dot busy" id="dot"></span><b id="connTitle">Đang khởi động…</b></span>
+      <span class="chip"><span class="bars" id="sigBars"><i></i><i></i><i></i><i></i></span><b id="rssi">—</b><small id="rsLabel"></small></span>
+    </div>
+    <div class="stage">
+      <div class="halo"></div>
+      <div class="floor"></div>
+      <img class="car" src="xe.webp" alt="" draggable="false">
+      <svg class="lockbadge" viewBox="0 0 48 48" aria-hidden="true">
+        <circle cx="24" cy="24" r="22" fill="#0b1220" stroke="currentColor" stroke-width="2.5"/>
+        <rect x="13" y="22" width="22" height="16" rx="3" fill="currentColor"/>
+        <path id="lockArc" d="M17 22 V17 a7 7 0 0 1 14 0 V22" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="stt" id="xe">—</div>
+    <div class="sub" id="ganNhat">Chìa gần nhất: —</div>
+    <div class="acc" id="accBox" hidden>🚗 Xe đang bật (ACC): tạm không tự khóa</div>
+  </div>
 
-  <!-- TRANG THAI -->
+  <div class="notice" id="notice" hidden>
+    <b id="noticeTitle"></b><span id="noticeText"></span>
+    <div style="margin-top:10px"><button class="sm" id="btnRetry">Thử lại</button></div>
+  </div>
+
+  <div class="rbtns">
+    <button class="rbtn g" id="btnMo" disabled aria-label="Mở xe">
+      <svg viewBox="0 0 48 48"><rect x="11" y="22" width="26" height="18" rx="4" fill="none" stroke="currentColor" stroke-width="3.5"/><path d="M17 22 V15 a8 8 0 0 1 15.5 -2.5" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></svg>
+      <span>MỞ XE</span></button>
+    <button class="rbtn r" id="btnKhoa" disabled aria-label="Khóa xe">
+      <svg viewBox="0 0 48 48"><rect x="11" y="22" width="26" height="18" rx="4" fill="none" stroke="currentColor" stroke-width="3.5"/><path d="M17 22 V15 a7 7 0 0 1 14 0 V22" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></svg>
+      <span>KHÓA XE</span></button>
+  </div>
+</section>
+
+<!-- ================= CAI DAT ================= -->
+<section id="vSet" hidden>
   <div class="card">
     <div class="conn">
-      <span class="dot busy" id="dot"></span>
-      <div style="min-width:0;flex:1"><b id="connTitle">Đang khởi động…</b><small id="connSub"></small></div>
+      <div style="min-width:0;flex:1"><b>Mạch đang dùng</b><small id="connSub"></small></div>
       <button class="sm ghost" id="btnDoiXe" style="flex:none">🔁 Đổi xe</button>
     </div>
-    <div class="st">
-      <div class="box"><small>Xe</small><b id="xe" class="mut">—</b></div>
-      <div class="box"><small>Chìa gần nhất</small><b id="ganNhat" class="mut">—</b></div>
-    </div>
-    <div class="rs"><small id="rsLabel">Sóng mạnh nhất</small><b id="rssi">—</b></div>
-    <div class="meter"><i id="fill"></i><span class="mk mo" id="mkMo" hidden></span><span class="mk kh" id="mkKh" hidden></span></div>
-    <div class="acc" id="accBox" hidden>🚗 Xe đang bật (ACC): tạm không tự khóa</div>
+    <div class="meter" style="margin-top:12px"><i id="fill"></i><span class="mk mo" id="mkMo" hidden></span><span class="mk kh" id="mkKh" hidden></span></div>
+    <small class="mut" style="font-size:12px">Vạch xanh = ngưỡng MỞ · vạch đỏ = ngưỡng KHÓA (chìa gần nhất)</small>
   </div>
 
   <!-- CHON MACH (nha co nhieu xe) -->
@@ -127,25 +206,12 @@ input.txt{width:100%;text-align:left;font-family:system-ui,sans-serif}
     <div style="margin-top:10px;display:flex;gap:8px"><button class="sm" id="btnBoardScan">Tìm lại</button><button class="sm ghost" id="btnBoardClose">Đóng</button></div>
   </div>
 
-  <div class="notice" id="notice" hidden>
-    <b id="noticeTitle"></b><span id="noticeText"></span>
-    <div style="margin-top:10px"><button class="sm" id="btnRetry">Thử lại</button></div>
-  </div>
-
-  <div class="btns">
-    <button class="big g" id="btnMo" disabled>🔓 MỞ XE</button>
-    <button class="big r" id="btnKhoa" disabled>🔒 KHÓA XE</button>
-  </div>
-
   <div class="card">
     <h3>Chìa khóa</h3>
     <div id="keyList"><div class="empty">Chưa có dữ liệu</div></div>
   </div>
 
-  <button class="toggle" id="btnToggle">📖 Hướng dẫn &amp; Cài đặt ▼</button>
-
-  <!-- CAI DAT (xo ra) -->
-  <div class="card" id="settings" hidden>
+  <div class="card" id="settings">
 
     <div class="guide" style="margin-bottom:6px">
       <b>Lần đầu sử dụng?</b>
@@ -245,6 +311,7 @@ input.txt{width:100%;text-align:left;font-family:system-ui,sans-serif}
       <div class="body"><button class="ghost" id="btnExit">Thoát chế độ cài đặt</button></div>
     </details>
   </div>
+</section>
 </main>
 
 <script>
@@ -409,34 +476,40 @@ function render(){
   $("sumExit").textContent = cd ? "Mạch đang ở chế độ cài đặt, đèn nháy nhanh" : "Mạch đang chạy bình thường";
 
   // xe
-  const xe = $("xe");
-  if (xeMo === null || !connected){ xe.textContent = "—"; xe.className = "mut"; }
-  else { xe.textContent = xeMo ? "ĐÃ MỞ" : "ĐÃ KHÓA"; xe.className = xeMo ? "ok" : "bad"; }
+  const xe = $("xe"), hero = $("hero");
+  if (xeMo === null || !connected){ xe.textContent = connected ? "—" : "Chưa kết nối"; hero.className = "hero unk"; }
+  else { xe.textContent = xeMo ? "ĐÃ MỞ" : "ĐÃ KHÓA"; hero.className = "hero " + (xeMo ? "mo" : "kh"); }
+  // khoa mo: quai khoa nhac len khi xe mo
+  $("lockArc").setAttribute("d", xeMo ? "M17 22 V14 a7 7 0 0 1 14 0" : "M17 22 V17 a7 7 0 0 1 14 0 V22");
+  $("hdrXe").textContent = connected && cfg.ten ? (nick(cfg.ten) || cfg.ten) : "Khóa xe thông minh";
   $("accBox").hidden = !(connected && accOn);
 
   // chia gan nhat
   let best = null;
   for (const id of keyOrder){ const l = live[id]; if (l && l.rssi !== null && (!best || l.rssi > live[best].rssi)) best = id; }
   const gn = $("ganNhat");
-  if (!connected){ gn.textContent = "—"; gn.className = "mut"; }
-  else if (best){ gn.textContent = keys[best].ten; gn.className = live[best].near ? "ok" : "warn"; }
-  else { gn.textContent = "Không thấy"; gn.className = "warn"; }
+  if (!connected) gn.textContent = "Chìa gần nhất: —";
+  else if (best) gn.textContent = "Chìa gần nhất: " + keys[best].ten + (live[best].near ? " · Gần" : " · Xa");
+  else gn.textContent = "Không thấy chìa nào";
+  // cot song
+  const d = best ? diem(live[best].rssi) : 0, n = !best ? 0 : d >= 75 ? 4 : d >= 50 ? 3 : d >= 25 ? 2 : 1;
+  [...$("sigBars").children].forEach((b, i) => b.classList.toggle("on", i < n));
   if (best){
     const k = keys[best];
-    $("rsLabel").textContent = "Sóng " + k.ten;
+    $("rsLabel").textContent = "";
     $("rssi").textContent = songTxt(live[best].rssi);
     $("fill").style.width = pct(live[best].rssi) + "%";
     $("mkMo").hidden = $("mkKh").hidden = false;
     $("mkMo").style.left = pct(k.mo) + "%"; $("mkKh").style.left = pct(k.kh) + "%";
   } else {
-    $("rsLabel").textContent = "Sóng mạnh nhất"; $("rssi").textContent = "—"; $("fill").style.width = "0";
+    $("rsLabel").textContent = ""; $("rssi").textContent = "—"; $("fill").style.width = "0";
     $("mkMo").hidden = $("mkKh").hidden = true;
   }
 
   // danh sach chia (man hinh chinh)
   const L = $("keyList");
   if (!keyOrder.length){
-    L.innerHTML = '<div class="empty">' + (connected && allowed ? "Chưa có chìa nào. Mở \"Hướng dẫn & Cài đặt\" để thêm." : "Kết nối với mạch để xem chìa") + "</div>";
+    L.innerHTML = '<div class="empty">' + (connected && allowed ? "Chưa có chìa nào. Mở mục \"Thêm / xóa chìa\" bên dưới để thêm." : "Kết nối với mạch để xem chìa") + "</div>";
   } else {
     L.innerHTML = keyOrder.map(id => {
       const k = keys[id], l = live[id];
@@ -479,12 +552,17 @@ $("keyEdit").onclick = e => {
 // ---------- nut chinh ----------
 $("btnMo").onclick = () => send("lenh mo");
 $("btnKhoa").onclick = () => send("lenh khoa");
-$("btnToggle").onclick = () => {
-  const s = $("settings"); s.hidden = !s.hidden;
-  $("btnToggle").textContent = "📖 Hướng dẫn & Cài đặt " + (s.hidden ? "▼" : "▲");
-  $("btnToggle").classList.toggle("on", !s.hidden);
-  if (!s.hidden) s.scrollIntoView({ behavior:"smooth" });
-};
+// Hai trang: Trang chu <-> Cai dat. Dung history de nut Back cua dien thoai quay ve trang chu.
+function showSet(on){
+  document.body.classList.toggle("home", !on);
+  $("vHome").hidden = on; $("barHome").hidden = on;
+  $("vSet").hidden = !on; $("barSet").hidden = !on;
+  window.scrollTo(0, 0);
+}
+$("btnMenu").onclick = () => { history.pushState({ set:1 }, ""); showSet(true); };
+$("btnBack").onclick = () => history.back();
+window.addEventListener("popstate", () => showSet(false));
+window.goBackFromNative = () => { if (!$("vSet").hidden){ history.back(); return true; } return false; };
 
 // ---------- them beacon ----------
 $("btnAddB").onclick = () => { $("scanBox").hidden = false; $("blist").innerHTML = ""; setMsg("scanMsg", "Đang tìm… để beacon gần điện thoại và lắc nhẹ", "mut"); $("btnAddB").disabled = true; A.scanBeacons(); };
